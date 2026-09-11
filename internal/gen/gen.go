@@ -111,20 +111,14 @@ func (g *Generator) generatePosts() error {
 	}
 
 	for _, p := range g.posts {
-		postFile, err := os.Open(p.Path)
-		if err != nil {
-			return fmt.Errorf("error while opening %s: %w", p.Path, err)
-		}
-		defer postFile.Close()
-
 		template, err := os.Open(fmt.Sprintf("%s/%s.html", templateDir, p.Metadata.Template))
 		if err != nil {
 			return fmt.Errorf("error while opening template %s: %w", p.Metadata.Template, err)
 		}
 		defer template.Close()
 
-		fileName := strings.Replace(p.Path, ".md", ".html", -1)
-		dest := fmt.Sprintf("out/%s", fileName)
+		outFileName := strings.Replace(p.Path, ".md", ".html", -1)
+		dest := fmt.Sprintf("out/%s", outFileName)
 
 		fOut, err := os.OpenFile(dest, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0640)
 		if err != nil {
@@ -132,10 +126,7 @@ func (g *Generator) generatePosts() error {
 		}
 		defer fOut.Close()
 
-		postFileScanner := bufio.NewScanner(postFile)
 		templateScanner := bufio.NewScanner(template)
-
-		g.skipFrontMatter(postFileScanner)
 
 		for templateScanner.Scan() {
 			line := templateScanner.Text()
@@ -159,17 +150,6 @@ func (g *Generator) generatePosts() error {
 	}
 
 	return nil
-}
-
-func (g *Generator) skipFrontMatter(scanner *bufio.Scanner) {
-	scanner.Scan()
-	if scanner.Text() == "---" {
-		for scanner.Scan() {
-			if scanner.Text() == "---" {
-				break
-			}
-		}
-	}
 }
 
 func (g *Generator) getAllPosts(dir string) error {
