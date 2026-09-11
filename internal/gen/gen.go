@@ -7,12 +7,19 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"time"
 )
 
 const outDir = "out"
 const assetsDir = "assets"
 const postsDir = "posts"
 const indexFile = "index.html"
+const templateDir = "templates"
+
+const titleTag = "{{ title }}"
+const contentTag = "{{ content }}"
+const dateTag = "{{ date }}"
+const excerptTag = "{{ excerpt }}"
 
 type Generator struct {
 	posts []post.Post
@@ -36,6 +43,11 @@ func GenerateWebsite() error {
 	}
 
 	err = generator.copyIndex()
+	if err != nil {
+		return err
+	}
+
+	err = generator.generatePosts()
 	if err != nil {
 		return err
 	}
@@ -88,6 +100,76 @@ func (g *Generator) copyIndex() error {
 	}
 
 	return nil
+}
+
+func (g *Generator) generatePosts() error {
+	destDir := fmt.Sprintf("%s/%s", outDir, postsDir)
+
+	err := os.Mkdir(destDir, 0740)
+	if err != nil && !os.IsExist(err) {
+		return fmt.Errorf("error while creating %s: %w", destDir, err)
+	}
+
+	for _, p := range g.posts {
+		postFile, err := os.Open(p.Path)
+		if err != nil {
+			return fmt.Errorf("error while opening %s: %w", p.Path, err)
+		}
+		defer postFile.Close()
+
+		template, err := os.Open(fmt.Sprintf("%s/%s.html", templateDir, p.Metadata.Template))
+		if err != nil {
+			return fmt.Errorf("error while opening template %s: %w", p.Metadata.Template, err)
+		}
+		defer template.Close()
+
+		fileName := strings.Replace(p.Path, ".md", ".html", -1)
+		dest := fmt.Sprintf("out/%s", fileName)
+
+		fOut, err := os.OpenFile(dest, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0640)
+		if err != nil {
+			return fmt.Errorf("error while generating new post: %w", err)
+		}
+		defer fOut.Close()
+
+		postFileScanner := bufio.NewScanner(postFile)
+		templateScanner := bufio.NewScanner(template)
+
+		g.skipFrontMatter(postFileScanner)
+
+		for templateScanner.Scan() {
+			line := templateScanner.Text()
+
+			if strings.Contains(line, titleTag) {
+				line = strings.Replace(line, titleTag, p.Metadata.Title, -1)
+			}
+
+			if strings.Contains(line, dateTag) {
+				line = strings.Replace(line, dateTag, p.Metadata.Date.Format(time.DateOnly), -1)
+			}
+
+			if strings.Contains(line, excerptTag) {
+				line = strings.Replace(line, excerptTag, p.Metadata.Excerpt, -1)
+			}
+
+			if _, err := fOut.WriteString(line + "\n"); err != nil {
+				return fmt.Errorf("error while generating %s: %w", p.Path, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (g *Generator) skipFrontMatter(scanner *bufio.Scanner) {
+	scanner.Scan()
+	if scanner.Text() == "---" {
+		for scanner.Scan() {
+			if scanner.Text() == "---" {
+				break
+			}
+		}
+	}
 }
 
 func (g *Generator) getAllPosts(dir string) error {
