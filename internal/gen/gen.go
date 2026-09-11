@@ -153,7 +153,7 @@ func (g *Generator) previewBuilder(tag string) string {
 
 	for _, t := range g.tags {
 		if tag == t.Name {
-			builder.WriteString("<div>\n")
+			builder.WriteString("<div class=\"bg-red\">\n")
 
 			for _, p := range t.Posts {
 				builder.WriteString("<p>" + p.Metadata.Title + "</p>\n")
