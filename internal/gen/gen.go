@@ -143,6 +143,15 @@ func (g *Generator) generatePosts() error {
 				line = strings.Replace(line, excerptTag, p.Metadata.Excerpt, -1)
 			}
 
+			if strings.Contains(line, contentTag) {
+				content, err := p.GetHTMLContent()
+				if err != nil {
+					return fmt.Errorf("error while generating post %s: %w", p.Path, err)
+				}
+
+				line = strings.Replace(line, contentTag, string(content), -1)
+			}
+
 			if _, err := fOut.WriteString(line + "\n"); err != nil {
 				return fmt.Errorf("error while generating %s: %w", p.Path, err)
 			}

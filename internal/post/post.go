@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 	"go.yaml.in/yaml/v4"
 )
 
@@ -42,6 +45,43 @@ func New(path string) (Post, error) {
 		return Post{}, err
 	}
 	return p, nil
+}
+
+func (p *Post) GetHTMLContent() ([]byte, error) {
+	extensions := parser.CommonExtensions | parser.NoEmptyLineBeforeBlock
+	mdParser := parser.NewWithExtensions(extensions)
+
+	f, err := os.Open(p.Path)
+	if err != nil {
+		return nil, fmt.Errorf("error while opening %s: %w", p.Path, err)
+	}
+
+	scanner := bufio.NewScanner(f)
+	p.skipFrontMatter(scanner)
+	var contentBuilder strings.Builder
+
+	for scanner.Scan() {
+		contentBuilder.WriteString(scanner.Text() + "\n")
+	}
+
+	doc := mdParser.Parse([]byte(contentBuilder.String()))
+
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+
+	return markdown.Render(doc, renderer), nil
+}
+
+func (p *Post) skipFrontMatter(s *bufio.Scanner) {
+	s.Scan()
+	if s.Text() == "---" {
+		for s.Scan() {
+			if s.Text() == "---" {
+				break
+			}
+		}
+	}
 }
 
 func (p *Post) readMetadata() error {
