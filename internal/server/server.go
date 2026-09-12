@@ -13,6 +13,8 @@ const outDirectory = "out"
 const indexFile = "index.html"
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Method + r.RequestURI)
+
 	if r.Method != http.MethodGet {
 		log.Println("invalid request: " + r.RequestURI)
 		w.WriteHeader(http.StatusNotFound)
