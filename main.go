@@ -9,7 +9,7 @@ import (
 
 func main() {
 	build := flag.Bool("build", false, "Generate the static website")
-	peak := flag.Bool("peak", false, "Serve the webpage")
+	peak := flag.Bool("peak", false, "Serve the web pages")
 	flag.Parse()
 
 	if *build {
