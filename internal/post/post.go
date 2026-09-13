@@ -73,6 +73,10 @@ func (p *Post) GetHTMLContent() ([]byte, error) {
 	return markdown.Render(doc, renderer), nil
 }
 
+func (p *Post) GetPostLink() string {
+	return strings.ReplaceAll(p.Path, ".md", ".html")
+}
+
 func (p *Post) skipFrontMatter(s *bufio.Scanner) {
 	s.Scan()
 	if s.Text() == "---" {
