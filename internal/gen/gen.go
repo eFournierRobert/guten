@@ -115,7 +115,6 @@ func (g *Generator) generatePosts() error {
 		if err != nil {
 			return fmt.Errorf("error while opening template %s: %w", p.Metadata.Template, err)
 		}
-		defer template.Close()
 
 		outFileName := strings.Replace(p.Path, ".md", ".html", -1)
 		dest := fmt.Sprintf("out/%s", outFileName)
@@ -124,7 +123,6 @@ func (g *Generator) generatePosts() error {
 		if err != nil {
 			return fmt.Errorf("error while generating new post: %w", err)
 		}
-		defer fOut.Close()
 
 		templateScanner := bufio.NewScanner(template)
 
@@ -156,6 +154,9 @@ func (g *Generator) generatePosts() error {
 				return fmt.Errorf("error while generating %s: %w", p.Path, err)
 			}
 		}
+
+		fOut.Close()
+		template.Close()
 	}
 
 	return nil
@@ -191,9 +192,9 @@ func (g *Generator) getAllPosts(dir string) error {
 				continue
 			}
 
-			for _, item := range g.tags {
+			for i, item := range g.tags {
 				if item.Name == t {
-					item.Posts = append(item.Posts, &p)
+					g.tags[i].Posts = append(item.Posts, &p)
 					break
 				}
 			}
