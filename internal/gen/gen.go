@@ -57,6 +57,10 @@ func GenerateWebsite() error {
 
 func (g *Generator) copyAssets() error {
 	assetsDest := fmt.Sprintf("%s/%s", outDir, assetsDir)
+	if err := os.RemoveAll(assetsDest); err != nil {
+		return err
+	}
+
 	if err := os.Mkdir(assetsDest, 0740); err != nil && !os.IsExist(err) {
 		return err
 	}
@@ -176,6 +180,12 @@ func (g *Generator) getAllPosts(dir string) error {
 			if err != nil {
 				return fmt.Errorf("error while getting posts in posts directory: %w", err)
 			}
+
+			if err := os.Mkdir("out/"+path, 0740); err != nil && !os.IsExist(err) {
+				return fmt.Errorf("error while creating post directory: %w", err)
+			}
+
+			continue
 		}
 
 		p, err := post.New(path)
@@ -203,18 +213,20 @@ func (g *Generator) getAllPosts(dir string) error {
 		posts = append(posts, p)
 	}
 
-	slices.SortFunc(posts, func(a, b post.Post) int {
-		aDate := a.Metadata.Date
-		bDate := b.Metadata.Date
+	for i, _ := range g.tags {
+		slices.SortFunc(g.tags[i].Posts, func(a, b *post.Post) int {
+			aDate := a.Metadata.Date
+			bDate := b.Metadata.Date
 
-		if aDate.Before(bDate) {
-			return -1
-		} else if bDate.Before(aDate) {
-			return 1
-		}
+			if aDate.Before(bDate) {
+				return 1
+			} else if bDate.Before(aDate) {
+				return -1
+			}
 
-		return 0
-	})
+			return 0
+		})
+	}
 
 	g.posts = append(g.posts, posts...)
 	return nil
@@ -225,13 +237,15 @@ func (g *Generator) previewBuilder(tag string) string {
 
 	for _, t := range g.tags {
 		if tag == t.Name {
-			builder.WriteString("<div>\n")
+			builder.WriteString("<div class=\"" + t.Name + "-previews\">")
 
 			for _, p := range t.Posts {
+				builder.WriteString("<div class=\"preview\">\n")
 				builder.WriteString("<a href=\"" + p.GetPostLink() + "\">")
 				builder.WriteString("<p>" + p.Metadata.Title + "</p>")
 				builder.WriteString("</a>\n")
 				builder.WriteString("<i>" + p.Metadata.Excerpt + "</i>\n")
+				builder.WriteString("</div>\n")
 			}
 
 			builder.WriteString("</div>\n")
