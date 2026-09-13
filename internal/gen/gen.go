@@ -224,10 +224,12 @@ func (g *Generator) previewBuilder(tag string) string {
 
 	for _, t := range g.tags {
 		if tag == t.Name {
-			builder.WriteString("<div class=\"bg-red\">\n")
+			builder.WriteString("<div>\n")
 
 			for _, p := range t.Posts {
-				builder.WriteString("<p>" + p.Metadata.Title + "</p>\n")
+				builder.WriteString("<a href=\"" + p.GetPostLink() + "\">")
+				builder.WriteString("<p>" + p.Metadata.Title + "</p>")
+				builder.WriteString("</a>\n")
 				builder.WriteString("<i>" + p.Metadata.Excerpt + "</i>\n")
 			}
 
