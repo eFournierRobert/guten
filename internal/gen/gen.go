@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"guten/internal/post"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -56,7 +57,7 @@ func GenerateWebsite() error {
 }
 
 func (g *Generator) copyAssets() error {
-	assetsDest := fmt.Sprintf("%s/%s", outDir, assetsDir)
+	assetsDest := filepath.Join(outDir, assetsDir)
 	if err := os.RemoveAll(assetsDest); err != nil {
 		return err
 	}
@@ -73,7 +74,7 @@ func (g *Generator) copyAssets() error {
 }
 
 func (g *Generator) copyIndex() error {
-	dest := fmt.Sprintf("%s/%s", outDir, indexFile)
+	dest := filepath.Join(outDir, indexFile)
 
 	fIn, err := os.Open(indexFile)
 	if err != nil {
@@ -107,7 +108,7 @@ func (g *Generator) copyIndex() error {
 }
 
 func (g *Generator) generatePosts() error {
-	destDir := fmt.Sprintf("%s/%s", outDir, postsDir)
+	destDir := filepath.Join(outDir, postsDir)
 
 	err := os.Mkdir(destDir, 0740)
 	if err != nil && !os.IsExist(err) {
@@ -121,7 +122,7 @@ func (g *Generator) generatePosts() error {
 		}
 
 		outFileName := strings.Replace(p.Path, ".md", ".html", -1)
-		dest := fmt.Sprintf("out/%s", outFileName)
+		dest := filepath.Join(outDir, outFileName)
 
 		fOut, err := os.OpenFile(dest, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0640)
 		if err != nil {
@@ -174,7 +175,7 @@ func (g *Generator) getAllPosts(dir string) error {
 
 	var posts []post.Post
 	for _, entry := range entries {
-		path := fmt.Sprintf("%s/%s", dir, entry.Name())
+		path := filepath.Join(dir, entry.Name())
 		if entry.IsDir() {
 			err := g.getAllPosts(path)
 			if err != nil {
