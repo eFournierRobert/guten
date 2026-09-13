@@ -45,7 +45,7 @@ func GenerateWebsite() error {
 		return err
 	}
 
-	err = generator.copyIndex()
+	err = generator.copyRootHtml()
 	if err != nil {
 		return err
 	}
@@ -72,27 +72,39 @@ func (g *Generator) copyAssets() error {
 	return nil
 }
 
-func (g *Generator) copyIndex() error {
-	dest := filepath.Join(outDir, indexFile)
-
-	content, err := os.ReadFile(indexFile)
+func (g *Generator) copyRootHtml() error {
+	entries, err := os.ReadDir(".")
 	if err != nil {
-		return fmt.Errorf("error while opening index.html: %w", err)
+		return fmt.Errorf("error while reading directory: %w", err)
 	}
 
-	fOut, err := os.OpenFile(dest, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0640)
-	if err != nil {
-		return fmt.Errorf("error while generating index.html: %w", err)
-	}
-	defer fOut.Close()
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".html") || entry.IsDir() {
+			continue
+		}
 
-	for _, t := range g.tags {
-		notation := fmt.Sprintf("{{ %s }}", t.Name)
-		content = []byte(strings.ReplaceAll(string(content), notation, g.previewBuilder(t.Name)))
-	}
+		filename := entry.Name()
+		dest := filepath.Join(outDir, filename)
 
-	if _, err := fOut.Write(content); err != nil {
-		return fmt.Errorf("error while generating index.html: %w", err)
+		content, err := os.ReadFile(filename)
+		if err != nil {
+			return fmt.Errorf("error while opening %s: %w", filename, err)
+		}
+
+		fOut, err := os.OpenFile(dest, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0640)
+		if err != nil {
+			return fmt.Errorf("error while generating %s: %w", filename, err)
+		}
+
+		for _, t := range g.tags {
+			notation := fmt.Sprintf("{{ %s }}", t.Name)
+			content = []byte(strings.ReplaceAll(string(content), notation, g.previewBuilder(t.Name)))
+		}
+
+		if _, err := fOut.Write(content); err != nil {
+			return fmt.Errorf("error while generating index.html: %w", err)
+		}
+		fOut.Close()
 	}
 
 	return nil
