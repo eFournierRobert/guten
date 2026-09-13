@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"bufio"
 	"fmt"
 	"guten/internal/post"
 	"os"
@@ -28,7 +27,10 @@ type Generator struct {
 }
 
 func GenerateWebsite() error {
-	if err := os.Mkdir(outDir, 0740); err != nil && !os.IsExist(err) {
+	if err := os.RemoveAll(outDir); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Join(outDir, postsDir), 0740); err != nil && !os.IsExist(err) {
 		return err
 	}
 
@@ -58,9 +60,6 @@ func GenerateWebsite() error {
 
 func (g *Generator) copyAssets() error {
 	assetsDest := filepath.Join(outDir, assetsDir)
-	if err := os.RemoveAll(assetsDest); err != nil {
-		return err
-	}
 
 	if err := os.Mkdir(assetsDest, 0740); err != nil && !os.IsExist(err) {
 		return err
@@ -76,11 +75,10 @@ func (g *Generator) copyAssets() error {
 func (g *Generator) copyIndex() error {
 	dest := filepath.Join(outDir, indexFile)
 
-	fIn, err := os.Open(indexFile)
+	content, err := os.ReadFile(indexFile)
 	if err != nil {
 		return fmt.Errorf("error while opening index.html: %w", err)
 	}
-	defer fIn.Close()
 
 	fOut, err := os.OpenFile(dest, os.O_TRUNC|os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0640)
 	if err != nil {
@@ -88,20 +86,13 @@ func (g *Generator) copyIndex() error {
 	}
 	defer fOut.Close()
 
-	scanner := bufio.NewScanner(fIn)
-	for scanner.Scan() {
-		line := scanner.Text()
+	for _, t := range g.tags {
+		notation := fmt.Sprintf("{{ %s }}", t.Name)
+		content = []byte(strings.ReplaceAll(string(content), notation, g.previewBuilder(t.Name)))
+	}
 
-		for _, t := range g.tags {
-			notation := fmt.Sprintf("{{ %s }}", t.Name)
-			if strings.Contains(line, notation) {
-				line = strings.Replace(line, notation, g.previewBuilder(t.Name), -1)
-			}
-		}
-
-		if _, err := fOut.WriteString(line + "\n"); err != nil {
-			return fmt.Errorf("error while generating index.html: %w", err)
-		}
+	if _, err := fOut.Write(content); err != nil {
+		return fmt.Errorf("error while generating index.html: %w", err)
 	}
 
 	return nil
@@ -116,7 +107,8 @@ func (g *Generator) generatePosts() error {
 	}
 
 	for _, p := range g.posts {
-		template, err := os.Open(fmt.Sprintf("%s/%s.html", templateDir, p.Metadata.Template))
+		template, err := os.ReadFile(filepath.Join(templateDir, p.Metadata.Template+".html"))
+		templateStr := string(template)
 		if err != nil {
 			return fmt.Errorf("error while opening template %s: %w", p.Metadata.Template, err)
 		}
@@ -129,39 +121,32 @@ func (g *Generator) generatePosts() error {
 			return fmt.Errorf("error while generating new post: %w", err)
 		}
 
-		templateScanner := bufio.NewScanner(template)
+		if strings.Contains(templateStr, titleTag) {
+			templateStr = strings.Replace(templateStr, titleTag, p.Metadata.Title, -1)
+		}
 
-		for templateScanner.Scan() {
-			line := templateScanner.Text()
+		if strings.Contains(templateStr, dateTag) {
+			templateStr = strings.Replace(templateStr, dateTag, p.Metadata.Date.Format(time.DateOnly), -1)
+		}
 
-			if strings.Contains(line, titleTag) {
-				line = strings.Replace(line, titleTag, p.Metadata.Title, -1)
+		if strings.Contains(templateStr, excerptTag) {
+			templateStr = strings.Replace(templateStr, excerptTag, p.Metadata.Excerpt, -1)
+		}
+
+		if strings.Contains(templateStr, contentTag) {
+			content, err := p.GetHTMLContent()
+			if err != nil {
+				return fmt.Errorf("error while generating post %s: %w", p.Path, err)
 			}
 
-			if strings.Contains(line, dateTag) {
-				line = strings.Replace(line, dateTag, p.Metadata.Date.Format(time.DateOnly), -1)
-			}
+			templateStr = strings.Replace(templateStr, contentTag, string(content), -1)
+		}
 
-			if strings.Contains(line, excerptTag) {
-				line = strings.Replace(line, excerptTag, p.Metadata.Excerpt, -1)
-			}
-
-			if strings.Contains(line, contentTag) {
-				content, err := p.GetHTMLContent()
-				if err != nil {
-					return fmt.Errorf("error while generating post %s: %w", p.Path, err)
-				}
-
-				line = strings.Replace(line, contentTag, string(content), -1)
-			}
-
-			if _, err := fOut.WriteString(line + "\n"); err != nil {
-				return fmt.Errorf("error while generating %s: %w", p.Path, err)
-			}
+		if _, err := fOut.WriteString(templateStr); err != nil {
+			return fmt.Errorf("error while generating %s: %w", p.Path, err)
 		}
 
 		fOut.Close()
-		template.Close()
 	}
 
 	return nil
