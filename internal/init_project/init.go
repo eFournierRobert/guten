@@ -7,11 +7,13 @@ import (
 	"os"
 )
 
+// Directories and files constants for initialization.
 const templatesDir = "templates"
 const postsDir = "posts"
 const indexFile = "index.html"
 const assetsDir = "assets"
 
+// Init function that inits a guten project in the given website directory.
 func Init(directory *string) error {
 	if *directory != "." {
 		if exist, err := doesPathExist(*directory); exist {
@@ -40,6 +42,7 @@ func Init(directory *string) error {
 	return nil
 }
 
+// Checks if the given path exists.
 func doesPathExist(dir string) (bool, error) {
 	_, err := os.Stat(dir)
 	if err != nil {
