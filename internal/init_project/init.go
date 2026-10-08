@@ -40,7 +40,10 @@ func Init(directory *string) error {
 		return fmt.Errorf("error during init: %w", err)
 	}
 
-	if err := os.WriteFile(filepath.Join(*directory, indexFile), nil, 0640); err != nil {
+	if err := os.WriteFile(
+		filepath.Join(*directory, indexFile),
+		[]byte("<!DOCTYPE html><html><body><h1>Welcome to your new Guten website!</h1></body></html>"),
+		0640); err != nil {
 		return fmt.Errorf("error during init: %w", err)
 	}
 
