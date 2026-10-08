@@ -93,8 +93,6 @@ Generates a static site in the `out/` directory:
 guten -peek
 ```
 
-**Alias:** Both `-peek` and `-build -server` combinations work.
-
 1. Builds the website (same as `-build`)
 2. Starts an HTTP server on `http://localhost:5000`
 3. Serves the generated `out/` directory
