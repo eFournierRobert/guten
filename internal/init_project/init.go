@@ -1,4 +1,4 @@
-// Package init_projects provides the function to initialize a
+// Package init_project provides the function to initialize a
 // directory into a new guten project.
 package init_project
 
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 )
 
 // Directories and files constants for initialization.
@@ -17,29 +18,31 @@ const assetsDir = "assets"
 
 // Init function that inits a guten project in the given website directory.
 func Init(directory *string) error {
+	if *directory == "" {
+		return errors.New("error: please provide a directory name")
+	}
+
 	if *directory != "." {
 		if exist, err := doesPathExist(*directory); exist {
-			return fmt.Errorf("error: directory %s already exists", *directory)
+			return fmt.Errorf("error during init: %s already exists", *directory)
 		} else if err != nil {
 			return fmt.Errorf("error during init: %w", err)
 		}
 	}
 
-	if err := os.MkdirAll(*directory+"/"+templatesDir, 0740); err != nil {
+	if err := os.MkdirAll(filepath.Join(*directory, templatesDir), 0740); err != nil {
 		return fmt.Errorf("error during init: %w", err)
 	}
-	if err := os.MkdirAll(*directory+"/"+postsDir, 0740); err != nil {
+	if err := os.MkdirAll(filepath.Join(*directory, postsDir), 0740); err != nil {
 		return fmt.Errorf("error during init: %w", err)
 	}
-	if err := os.MkdirAll(*directory+"/"+assetsDir, 0740); err != nil {
+	if err := os.MkdirAll(filepath.Join(*directory, assetsDir), 0740); err != nil {
 		return fmt.Errorf("error during init: %w", err)
 	}
 
-	fd, err := os.Create(*directory + "/" + indexFile)
-	if err != nil {
+	if err := os.WriteFile(filepath.Join(*directory, indexFile), nil, 0640); err != nil {
 		return fmt.Errorf("error during init: %w", err)
 	}
-	fd.Close()
 
 	return nil
 }
