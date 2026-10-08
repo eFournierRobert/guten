@@ -149,47 +149,6 @@ out/
     └── *.html              # One per post file
 ```
 
-## Optional Structure
-
-The following are optional but commonly used:
-
-### Custom asset organization
-
-```
-assets/
-├── css/
-│   ├── style.css
-│   └── syntax.css
-├── js/
-│   ├── main.js
-│   └── highlight.js
-└── fonts/
-    └── ...
-```
-
-### Posts with metadata
-
-```
-posts/
-├── drafts/                 # Work in progress
-│   └── draft-post.md
-├── published/              # Published content
-│   └── published-post.md
-└── archive/                # Older content
-    └── old-post.md
-```
-
-### Multiple template types
-
-```
-templates/
-├── post.html               # Blog posts
-├── page.html               # Static pages
-├── project.html            # Projects
-├── author.html             # Author pages
-└── tag.html                # Tag pages
-```
-
 ## Complete Example
 
 Here's a complete example project structure:
