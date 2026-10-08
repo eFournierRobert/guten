@@ -1,3 +1,5 @@
+// Package init_projects provides the function to initialize a
+// directory into a new guten project.
 package init_project
 
 import (
