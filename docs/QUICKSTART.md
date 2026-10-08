@@ -13,16 +13,11 @@ go install .
 ## Step 2: Create a Project
 
 ```bash
-# Create and enter your project directory
-mkdir my-website
+guten -init my-website
 cd my-website
-
-# Create required directories
-mkdir posts templates assets
-
-# Create required index.html
-echo '<!DOCTYPE html><html><body><h1>My Site</h1></body></html>' > index.html
 ```
+
+This creates the required `posts/`, `templates/` and `assets/` directories along with a basic `index.html`. The `posts/` and `templates/` directories start empty, so you still need to create your first post and template (next steps).
 
 ## Step 3: Create a Post
 
