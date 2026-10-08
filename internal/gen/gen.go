@@ -1,5 +1,10 @@
 package gen
 
+// Package gen provides the website generator for guten.
+// It parses Markdown posts with YAML frontmatter, applies HTML templates,
+// and generates a static site in the out/ directory.
+// Requires posts/, templates/, assets/, and index.html in the project root.
+
 import (
 	"fmt"
 	"guten/internal/post"
@@ -10,22 +15,29 @@ import (
 	"time"
 )
 
+// Directory constants for the build process.
 const outDir = "out"
 const assetsDir = "assets"
 const postsDir = "posts"
 const indexFile = "index.html"
 const templateDir = "templates"
 
+// Template variable tags available in template files.
 const titleTag = "{{ title }}"
 const contentTag = "{{ content }}"
 const dateTag = "{{ date }}"
 const excerptTag = "{{ excerpt }}"
 
+// Generator handles the static site generation process.
+// It collects posts, builds tag indexes, and generates output files.
 type Generator struct {
 	posts []post.Post
 	tags  []post.Tag
 }
 
+// GenerateWebsite builds a static site from posts and templates.
+// It clears out/, copies assets/, processes posts, and generates HTML.
+// Requires: index.html in root, assets/ directory, posts/, and templates/.
 func GenerateWebsite() error {
 	if err := os.RemoveAll(outDir); err != nil {
 		return err
@@ -58,6 +70,8 @@ func GenerateWebsite() error {
 	return nil
 }
 
+// copyAssets copies the assets/ directory to out/assets/.
+// Required for the build to succeed - the directory must exist.
 func (g *Generator) copyAssets() error {
 	assetsDest := filepath.Join(outDir, assetsDir)
 
@@ -72,6 +86,9 @@ func (g *Generator) copyAssets() error {
 	return nil
 }
 
+// copyRootHtml copies all HTML files from the project root to out/ and
+// replaces {{ tagname }} with tag preview sections (lists of posts with that tag).
+// The index.html file must exist in the root for a homepage to be generated.
 func (g *Generator) copyRootHtml() error {
 	entries, err := os.ReadDir(".")
 	if err != nil {
@@ -110,6 +127,9 @@ func (g *Generator) copyRootHtml() error {
 	return nil
 }
 
+// generatePosts renders each post using its template and writes the result to out/posts/.
+// Template variables {{ title }}, {{ date }}, {{ excerpt }}, and {{ content }} are replaced.
+// The {{ content }} variable requires the post content to be converted from Markdown to HTML.
 func (g *Generator) generatePosts() error {
 	destDir := filepath.Join(outDir, postsDir)
 
@@ -164,6 +184,9 @@ func (g *Generator) generatePosts() error {
 	return nil
 }
 
+// getAllPosts recursively scans the posts/ directory, parses each Markdown file,
+// and collects them into the Generator. It also builds a tag index by collecting
+// all posts that share the same tags. Posts are sorted by date (newest first).
 func (g *Generator) getAllPosts(dir string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
@@ -230,6 +253,9 @@ func (g *Generator) getAllPosts(dir string) error {
 	return nil
 }
 
+// previewBuilder generates HTML for a tag preview section containing all posts with that tag.
+// The output is a div with class "{tag}-previews" containing individual preview divs.
+// Each preview has links to the post and displays title + excerpt.
 func (g *Generator) previewBuilder(tag string) string {
 	builder := strings.Builder{}
 

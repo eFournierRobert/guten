@@ -7,6 +7,8 @@ import (
 	"guten/internal/serve"
 )
 
+// guten is a static site generator. Run with -build to generate a static site,
+// or -peek to build and serve on localhost:5000.
 func main() {
 	build := flag.Bool("build", false, "Generate the static website")
 	peek := flag.Bool("peek", false, "Serve the web pages")
