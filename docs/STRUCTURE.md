@@ -2,6 +2,8 @@
 
 This document explains the file and directory structure required for guten to work properly.
 
+> **Tip:** `guten -init <dir>` scaffolds the base structure for you (required directories plus a basic `index.html`). You still need to add your posts and templates by hand.
+
 ## Required Structure
 
 Every guten project must have the following structure:
@@ -26,18 +28,7 @@ my-site/
 - **Purpose:** The main entry point for your site
 - **Behavior:** Copied directly to `out/index.html` during build
 
-You can use special tag syntax in `index.html` to generate tag previews:
-
-```html
-<!DOCTYPE html>
-<html>
-<body>
-    <h1>My Blog</h1>
-    {{ blog }}      <!-- Posts tagged 'blog' -->
-    {{ news }}      <!-- Posts tagged 'news' -->
-</body>
-</html>
-```
+In addition to static content, `index.html` supports special tag syntax that generates preview sections for posts - see [TEMPLATES.md](./TEMPLATES.md) for details and examples.
 
 ### `assets/` (Required)
 

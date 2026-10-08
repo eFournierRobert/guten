@@ -24,15 +24,21 @@ You can use these files as a template for your own site:
 ```bash
 # Copy the example files to a new directory
 cp -r docs/EXAMPLES/* /path/to/your/site/
+```
 
-# Or create your own structure
-mkdir my-site
+Or scaffold a new project with `guten -init` and copy just the content:
+
+```bash
+# Scaffold the base structure (directories + index.html)
+guten -init my-site
 cd my-site
-cp docs/EXAMPLES/index.html .
-mkdir -p assets/css posts templates
-cp docs/EXAMPLES/assets/css/style.css assets/css/
-cp docs/EXAMPLES/posts/*.md posts/
-cp docs/EXAMPLES/templates/*.html templates/
+
+# Copy the example content
+mkdir -p assets/css    # init only creates the empty assets/ directory
+cp ../docs/EXAMPLES/index.html .
+cp ../docs/EXAMPLES/assets/css/style.css assets/css/
+cp ../docs/EXAMPLES/posts/*.md posts/
+cp ../docs/EXAMPLES/templates/*.html templates/
 
 # Run guten
 guten -build

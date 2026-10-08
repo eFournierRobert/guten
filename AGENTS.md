@@ -3,6 +3,9 @@
 ## Quick Start
 
 ```bash
+# Init a new project directory
+guten -init my-site
+
 # Build the website (run from your project directory)
 guten -build
 
@@ -12,7 +15,8 @@ guten -peek
 
 ## Architecture
 
-- `main.go` - Entry point with `-build` and `-peek` flags
+- `main.go` - Entry point with `-init`, `-build` and `-peek` flags
+- `internal/init_project/init.go` - Initializes a directory into a new guten project (`-init` flag)
 - `internal/gen/gen.go` - Website generator (parses posts, applies templates)
 - `internal/post/post.go` - Post parsing with YAML frontmatter and Markdown rendering
 - `internal/serve/serve.go` - HTTP server (calls gen, then starts server)
@@ -20,7 +24,7 @@ guten -peek
 
 ## Project Structure
 
-**Required files:**
+**Required files (all scaffolded by `guten -init`):**
 - `index.html` in project root - copied to `out/index.html`
 - `assets/` directory - copied to `out/assets/`
 - `posts/` directory with `.md` files - processed and output to `out/posts/`
