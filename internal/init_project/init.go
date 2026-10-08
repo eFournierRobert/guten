@@ -19,7 +19,7 @@ const assetsDir = "assets"
 // Init function that inits a guten project in the given website directory.
 func Init(directory *string) error {
 	if *directory == "" {
-		return errors.New("error: please provide a directory name")
+		return errors.New("error during init: please provide a directory name")
 	}
 
 	if *directory != "." {
