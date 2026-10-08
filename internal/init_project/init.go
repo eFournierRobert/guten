@@ -13,10 +13,12 @@ const indexFile = "index.html"
 const assetsDir = "assets"
 
 func Init(directory *string) error {
-	if exist, err := doesPathExist(*directory); exist {
-		return fmt.Errorf("error: directory %s already exists", *directory)
-	} else if err != nil {
-		return fmt.Errorf("error during init: %w", err)
+	if *directory != "." {
+		if exist, err := doesPathExist(*directory); exist {
+			return fmt.Errorf("error: directory %s already exists", *directory)
+		} else if err != nil {
+			return fmt.Errorf("error during init: %w", err)
+		}
 	}
 
 	if err := os.MkdirAll(*directory+"/"+templatesDir, 0740); err != nil {
