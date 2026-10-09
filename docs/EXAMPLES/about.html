@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - My Blog</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <div class="page">
+        {{ include:navbar.html }}
+
+        <section>
+            <h1>About this site</h1>
+            <p>This page is a plain HTML file sitting in the project root, next to
+            <code>index.html</code>. It does not use a post template - guten copies every
+            root <code>.html</code> file to <code>out/</code> and expands includes and tag
+            notations on the way through.</p>
+            <p>Like every other page on this site, the navigation bar and the footer are not
+            written in this file: they come from shared snippets in the
+            <code>includes/</code> directory.</p>
+        </section>
+
+        {{ include:footer.html }}
+    </div>
+</body>
+</html>

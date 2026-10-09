@@ -4,7 +4,7 @@ This guide covers everything you need to know about creating and using templates
 
 ## What is a Template?
 
-A template is an HTML file that defines the layout and structure of your generated pages. Templates contain special tags (like `{{ title }}` and `{{ content }}`) that get replaced with actual content during the build process.
+A template is an HTML file that defines the layout and structure of your generated pages. Post templates contain special tags (like `{{ title }}` and `{{ content }}`) that get replaced with the post's metadata and content during the build. Root HTML files like `index.html` use the same curly brace notation for tag previews instead of post variables. Both contexts can reuse shared markup with `{{ include:filename }}` - see the [Includes](#includes) section.
 
 ## Template Files Location
 
@@ -85,6 +85,63 @@ Each tag preview generates:
     <!-- More posts... -->
 </div>
 ```
+
+## Includes
+
+Includes are reusable HTML snippets that let you share markup (headers, footers, navigation, etc.) between templates and root HTML files instead of copy-pasting it.
+
+Files in the `includes/` directory are referenced with the `{{ include:filename }}` notation:
+
+```html
+<!-- index.html or templates/post.html -->
+<nav>
+    {{ include:navbar.html }}   <!-- Inserted from includes/navbar.html -->
+</nav>
+
+...
+
+{{ include:footer.html }}       <!-- Inserted from includes/footer.html -->
+```
+
+During the build, every `{{ include:filename }}` occurrence is replaced with the full contents of `includes/filename`. If your project has no `includes/` directory, builds work as before - existing projects are unaffected.
+
+The example site in [`EXAMPLES/`](./EXAMPLES/) uses includes on every page - see `includes/navbar.html`, `includes/footer.html` and `includes/tag-cloud.html` for live reference files.
+
+### What gets expanded inside an include
+
+- **Tag notations always work**: `{{ tagname }}` inside an include file is expanded into tag previews when the include is loaded, before the include is inserted anywhere. Tag notations also work directly in post templates. So both of the following produce tag previews:
+  ```html
+  <!-- In templates/post.html -->
+  <aside class="blog-sidebar">{{ blog }}</aside>
+  
+  <!-- Inside includes/sidebar.html -->
+  <div>{{ blog }}</div>
+  ```
+- **Post variables never do**: `{{ title }}`, `{{ date }}`, `{{ excerpt }}` and `{{ content }}` are never expanded inside includes. Includes are inserted after all post variables are resolved, so any post variable you put in an include file lands in the output as a literal string. Keep includes free of post variables.
+- **Nested includes do not**: an `{{ include:... }}` notation inside an include file is *not* expanded. Compose includes from plain HTML only, not from other includes.
+- **Tag notations in post content do not**: tag notations inside your Markdown are never expanded - they only work in root HTML files and templates. Include notations in post content, however, are expanded by the include pass at the end of post rendering.
+
+### Example
+
+`includes/footer.html`:
+
+```html
+<footer>
+    <p>&copy; 2024 My Blog. Built with guten.</p>
+</footer>
+```
+
+`index.html`:
+
+```html
+<body>
+    <h1>My Blog</h1>
+    {{ blog }}
+    {{ include:footer.html }}
+</body>
+```
+
+The generated `out/index.html` contains the footer markup in place of the include notation.
 
 ## Template Reference Examples
 
@@ -227,4 +284,4 @@ These names are reserved for post metadata. Using them as custom tags will cause
 
 3. **Test locally**: Use `guten -peek` to preview your templates before deploying.
 
-4. **Template inheritance**: Since guten doesn't support template inheritance, create separate templates for different page types or use a shared header/footer include pattern.
+4. **Shared header/footer markup**: Use includes (`{{ include:filename }}`) to share navigation, headers and footers between templates - see the [Includes](#includes) section.

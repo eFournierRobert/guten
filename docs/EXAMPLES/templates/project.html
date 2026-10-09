@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Projects</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <div class="page">
+        {{ include:navbar.html }}
+
+        <article class="project">
+            <header>
+                <h1>{{ title }}</h1>
+                <time>{{ date }}</time>
+            </header>
+
+            <div class="project-content">
+                {{ content }}
+            </div>
+        </article>
+
+        {{ include:footer.html }}
+    </div>
+</body>
+</html>

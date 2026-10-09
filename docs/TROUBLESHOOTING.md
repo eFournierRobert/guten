@@ -28,6 +28,18 @@ tags:
 - Post specifies `template: post`
 - Need `templates/post.html` file
 
+## Build succeeds but `{{ include:... }}` appears in the generated HTML
+
+**Cause:** The include notation doesn't match any file in your `includes/` directory. The most common reasons:
+
+- The file name is misspelled (including the `.html` extension - it's part of the notation: `{{ include:footer.html }}`)
+- The file was placed in the wrong directory (top-level `includes/`, no subdirectories)
+- The `includes/` directory doesn't exist or is empty
+
+**Fix:** Check that the exact file exists in `includes/`. Includes are matched by the full file name. If a notation never matches, guten leaves it in the output as-is rather than failing the build. Note that nested includes (an `{{ include:... }}` inside an include file) are not supported and will also remain literal.
+
+If you see `{{ title }}`, `{{ date }}`, `{{ excerpt }}` or `{{ content }}` rendered as literal text on pages that use includes: post variables are not expanded inside include files - they are only expanded in post templates. Move that markup out of the include and into the template itself.
+
 ## Build succeeds but no HTML in output
 
 **Cause:** Missing `index.html` in project root.

@@ -15,6 +15,8 @@ my-site/
 │   └── ...             # Any CSS, JS, images, etc.
 ├── posts/              # ✅ REQUIRED - Post directory
 │   └── *.md            # Markdown post files
+├── includes/           # Optional - Reusable HTML includes
+│   └── *.html          # Referenced with {{ include:filename }}
 └── templates/          # ✅ REQUIRED - Template directory
     └── *.html          # HTML template files
 ```
@@ -123,6 +125,20 @@ Template naming convention:
 | `page.html` | `template: page` | Static pages |
 | `project.html` | `template: project` | Project showcases |
 
+### `includes/` (Optional)
+
+- **Type:** Directory
+- **Purpose:** Contains reusable HTML snippets (headers, footers, navigation, etc.)
+- **Behavior:** Files are *not* copied to `out/` - they are inlined into pages during build
+
+Reference an include from any root HTML file or template with the `{{ include:filename }}` notation:
+
+```html
+{{ include:footer.html }}   <!-- Replaced with the contents of includes/footer.html -->
+```
+
+Tag notations (`{{ tagname }}`) inside include files are always expanded into tag previews when the include is loaded - same in root HTML files and post templates. Post variables (`{{ title }}`, `{{ date }}`, `{{ excerpt }}`, `{{ content }}`) and nested includes (`{{ include:... }}`) are **not** supported inside include files - see [TEMPLATES.md](./TEMPLATES.md) for details. The [example site](./EXAMPLES/) uses includes on every page. Projects without an `includes/` directory build fine; `guten -init` creates the directory but you can ignore it.
+
 ### `out/` (Generated)
 
 - **Type:** Directory (created automatically)
@@ -160,6 +176,9 @@ my-blog/
 │   ├── 2024-02-20-second-post.md
 │   └── tutorials/
 │       └── making-a-template.md
+├── includes/                           # Reusable HTML includes (optional)
+│   ├── navbar.html
+│   └── footer.html
 ├── templates/                          # HTML templates
 │   ├── post.html
 │   └── page.html
@@ -185,3 +204,5 @@ my-blog/
 3. **Wrong template name**: The `template` field in a post must match a template file name (without `.html` extension).
 
 4. **Reserved tag names**: Don't use `title`, `content`, `date`, or `excerpt` as custom tags.
+
+5. **Typo in include name**: If `{{ include:foo.html }}` doesn't match a file in `includes/`, the notation is left as-is in the output. Check the file name in your `includes/` directory (exact spelling, including the `.html` extension).
