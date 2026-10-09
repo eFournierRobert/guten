@@ -6,6 +6,7 @@ package gen
 // Requires posts/, templates/, assets/, and index.html in the project root.
 
 import (
+	"errors"
 	"fmt"
 	"guten/internal/post"
 	"os"
@@ -170,15 +171,15 @@ func (g *Generator) generatePosts() error {
 		}
 
 		if strings.Contains(templateStr, titleTag) {
-			templateStr = strings.Replace(templateStr, titleTag, p.Metadata.Title, -1)
+			templateStr = strings.ReplaceAll(templateStr, titleTag, p.Metadata.Title)
 		}
 
 		if strings.Contains(templateStr, dateTag) {
-			templateStr = strings.Replace(templateStr, dateTag, p.Metadata.Date.Format(time.DateOnly), -1)
+			templateStr = strings.ReplaceAll(templateStr, dateTag, p.Metadata.Date.Format(time.DateOnly))
 		}
 
 		if strings.Contains(templateStr, excerptTag) {
-			templateStr = strings.Replace(templateStr, excerptTag, p.Metadata.Excerpt, -1)
+			templateStr = strings.ReplaceAll(templateStr, excerptTag, p.Metadata.Excerpt)
 		}
 
 		for _, include := range g.includes {
@@ -303,13 +304,17 @@ func (g *Generator) previewBuilder(tag string) string {
 func (g *Generator) getAllIncludesTags() error {
 	entries, err := os.ReadDir(includesDir)
 	if err != nil {
+		// Backward compatibility
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
 		return err
 	}
 
 	var t []Include
 	for _, entry := range entries {
 		if !entry.IsDir() {
-			content, err := os.ReadFile(entry.Name())
+			content, err := os.ReadFile(filepath.Join(includesDir, entry.Name()))
 			if err != nil {
 				return err
 			}
