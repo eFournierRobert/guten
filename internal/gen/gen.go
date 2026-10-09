@@ -185,11 +185,6 @@ func (g *Generator) generatePosts() error {
 			templateStr = strings.ReplaceAll(templateStr, excerptTag, p.Metadata.Excerpt)
 		}
 
-		for _, include := range g.includes {
-			notation := fmt.Sprintf("{{ include:%s }}", include.name)
-			templateStr = strings.ReplaceAll(templateStr, notation, string(include.fileContent))
-		}
-
 		templateStr = string(g.expandAllTags([]byte(templateStr)))
 
 		if strings.Contains(templateStr, contentTag) {
@@ -199,6 +194,11 @@ func (g *Generator) generatePosts() error {
 			}
 
 			templateStr = strings.Replace(templateStr, contentTag, string(content), -1)
+		}
+
+		for _, include := range g.includes {
+			notation := fmt.Sprintf("{{ include:%s }}", include.name)
+			templateStr = strings.ReplaceAll(templateStr, notation, string(include.fileContent))
 		}
 
 		if _, err := fOut.WriteString(templateStr); err != nil {
