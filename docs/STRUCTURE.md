@@ -2,7 +2,7 @@
 
 This document explains the file and directory structure required for guten to work properly.
 
-> **Tip:** `guten -init <dir>` scaffolds the base structure for you (required directories plus a basic `index.html`). You still need to add your posts and templates by hand.
+> **Tip:** `guten -init <dir>` scaffolds the base structure for you (required directories plus a basic `index.html`). You still need to add your templates, and your posts - create each starter with `guten -new-post <path>` or write them by hand.
 
 ## Required Structure
 

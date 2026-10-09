@@ -6,6 +6,9 @@
 # Init a new project directory
 guten -init my-site
 
+# Create a new post file with default metadata (run from your project directory)
+guten -new-post posts/hello-world.md
+
 # Build the website (run from your project directory)
 guten -build
 
@@ -15,10 +18,10 @@ guten -peek
 
 ## Architecture
 
-- `main.go` - Entry point with `-init`, `-build` and `-peek` flags
+- `main.go` - Entry point with `-init`, `-new-post`, `-build` and `-peek` flags
 - `internal/init_project/init.go` - Initializes a directory into a new guten project (`-init` flag)
 - `internal/gen/gen.go` - Website generator (parses posts, applies templates)
-- `internal/post/post.go` - Post parsing with YAML frontmatter and Markdown rendering
+- `internal/post/post.go` - Post parsing with YAML frontmatter, Markdown rendering, and new post creation (`-new-post` flag)
 - `internal/serve/serve.go` - HTTP server (calls gen, then starts server)
 - `internal/server/server.go` - Simple HTTP static file server on port 5000
 

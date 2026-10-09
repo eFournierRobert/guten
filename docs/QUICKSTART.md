@@ -5,7 +5,7 @@ Get up and running with guten in 5 minutes.
 ## Step 1: Install guten
 
 ```bash
-git clone https://codeberg.org/efournierrobert/guten.git
+git clone https://github.com/eFournierRobert/guten.git
 cd guten
 go install .
 ```
@@ -17,11 +17,17 @@ guten -init my-website
 cd my-website
 ```
 
-This creates the required `posts/`, `templates/` and `assets/` directories along with a basic `index.html`. The `posts/` and `templates/` directories start empty, so you still need to create your first post and template (next steps).
+This creates the required `posts/`, `templates/` and `assets/` directories along with a basic `index.html`. The `posts/` and `templates/` directories start empty, so you still need to create your first post and template (next steps). The post can be created with `guten -new-post` or written by hand.
 
 ## Step 3: Create a Post
 
-Create `posts/hello-world.md`:
+The easiest way is to ask guten for a starter post - it fills in today's date, a placeholder title, excerpt and the `post` template, plus a random placeholder line where your content belongs:
+
+```bash
+guten -new-post posts/hello-world.md
+```
+
+It creates the post at the path you give (anywhere inside `posts/`, including subdirectories). If the file already exists, guten asks before overwriting it. Then open the file and replace the placeholders with your own content:
 
 ```markdown
 ---

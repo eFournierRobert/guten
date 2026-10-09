@@ -19,7 +19,10 @@ This will compile the binary and put it in `~/go/bin/`.
 guten -init my-site
 cd my-site
 
-# Create your posts and templates (see docs/QUICKSTART.md)
+# Create a starter post, then edit the template name, title and content
+guten -new-post posts/hello-world.md
+vim posts/hello-world.md templates/post.html    # see docs/QUICKSTART.md
+
 
 # Build or serve
 guten -build   # Build to out/
@@ -35,6 +38,7 @@ See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) for a step-by-step guide.
 | Flag | What it does |
 |------|-------------|
 | `-init <dir>` | Scaffolds a new project in `dir`: creates `index.html`, `assets/`, `posts/` and `templates/`. The directory must not already exist, except `guten -init .` which initializes the current directory |
+| `-new-post <path>` | Writes a new starter post: frontmatter with today's date and the `post` template, plus a placeholder quote as content. If the file already exists, it asks before overwriting; you must then replace the placeholder title, excerpt and content |
 | `-build` | Generates the static site in `out/`. The output directory is completely cleared and rebuilt on each run |
 | `-peek` | Builds the site (same as `-build`), then serves `out/` over HTTP at `http://localhost:5000` (Ctrl+C to stop) |
 

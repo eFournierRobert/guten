@@ -79,6 +79,9 @@ func New(path string) (Post, error) {
 	return p, nil
 }
 
+// NewEmpty creates a new post file at path with default metadata
+// (today's date, "post" template) and a random placeholder quote as content.
+// If path already exists as a file, it asks before overwriting; directories are never overwritten.
 func NewEmpty(path string) (Post, error) {
 	f, err := os.Stat(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -120,6 +123,8 @@ func NewEmpty(path string) (Post, error) {
 	return p, nil
 }
 
+// buildPostMdContent writes the post's YAML frontmatter followed by a random
+// placeholder quote, ready to be saved as the post file.
 func (p *Post) buildPostMdContent() []byte {
 	var sb strings.Builder
 	sb.WriteString("---\n")
