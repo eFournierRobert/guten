@@ -13,7 +13,7 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h1 {
+h1, h2, h3, h4 {
     line-height: 1.3;
     margin-bottom: 0.5em;
 }
@@ -86,4 +86,55 @@ pre code {
 
 .project-content {
     margin-bottom: 30px;
+}
+
+/* Shared layout for root HTML pages */
+.page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Includes */
+.site-nav {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.site-nav a {
+    display: inline-block;
+    margin-right: 20px;
+    font-weight: 600;
+}
+
+.site-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    color: #666;
+}
+
+.tag-cloud {
+    background: #f9f9f9;
+    padding: 20px;
+    border-left: 4px solid #eee;
+    margin-top: 30px;
+}
+
+.tag-cloud h3 {
+    margin-top: 0;
+}
+
+/* Tag previews */
+.preview {
+    margin-bottom: 12px;
+}
+
+.preview p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.preview i {
+    color: #666;
 }

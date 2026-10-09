@@ -90,8 +90,10 @@ Rules:
 - Only files directly in `includes/` are used (subdirectories are skipped)
 - Missing `includes/` directory is fine (backward compatibility for existing projects)
 - Includes are pre-processed when loaded: `{{ tagname }}` notations inside them ARE expanded (tag previews), even when the include ends up in a post template
+- Includes are inserted after all post variables and tag notations are expanded, so they are opaque: nothing inside an include is ever expanded further
 - Post variables are NOT expanded inside includes: `{{ title }}`, `{{ date }}`, `{{ excerpt }}`, `{{ content }}` land in the output as literal strings
 - Nested includes are NOT supported: `{{ include:... }}` inside an include file is not expanded
+- Tag notations inside post Markdown content are never expanded - tags work in templates and root HTML files only. Include notations inside post content are expanded by the include pass at the end of post rendering
 - Non-matching notations are left as-is in the output (no build error)
 
 ## Reserved Tags

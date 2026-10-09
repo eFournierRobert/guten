@@ -13,3 +13,5 @@ tags:
 This post demonstrates a feature of guten: **tag notations expand even inside post templates** (not just root HTML files).
 
 The post template shows `{{ blog }}` in the sidebar to list all blog posts, alongside the main content.
+
+The "More from this site" section below comes from `includes/tag-cloud.html`, whose own tag notations are expanded inside the include itself - one shared snippet instead of per-page markup.

@@ -137,7 +137,7 @@ Reference an include from any root HTML file or template with the `{{ include:fi
 {{ include:footer.html }}   <!-- Replaced with the contents of includes/footer.html -->
 ```
 
-Tag notations (`{{ tagname }}`) inside include files are always expanded into tag previews when the include is loaded - same in root HTML files and post templates. Post variables (`{{ title }}`, `{{ date }}`, `{{ excerpt }}`, `{{ content }}`) and nested includes (`{{ include:... }}`) are **not** supported inside include files - see [TEMPLATES.md](./TEMPLATES.md) for details. Projects without an `includes/` directory build fine; `guten -init` creates the directory but you can ignore it.
+Tag notations (`{{ tagname }}`) inside include files are always expanded into tag previews when the include is loaded - same in root HTML files and post templates. Post variables (`{{ title }}`, `{{ date }}`, `{{ excerpt }}`, `{{ content }}`) and nested includes (`{{ include:... }}`) are **not** supported inside include files - see [TEMPLATES.md](./TEMPLATES.md) for details. The [example site](./EXAMPLES/) uses includes on every page. Projects without an `includes/` directory build fine; `guten -init` creates the directory but you can ignore it.
 
 ### `out/` (Generated)
 

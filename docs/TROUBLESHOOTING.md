@@ -38,7 +38,7 @@ tags:
 
 **Fix:** Check that the exact file exists in `includes/`. Includes are matched by the full file name. If a notation never matches, guten leaves it in the output as-is rather than failing the build. Note that nested includes (an `{{ include:... }}` inside an include file) are not supported and will also remain literal.
 
-If you see `{{ title }}`, `{{ date }}` or similar rendered as literal text on pages that use includes: post variables are not expanded inside include files - they are only expanded in template files. Move that markup out of the include into the template.
+If you see `{{ title }}`, `{{ date }}`, `{{ excerpt }}` or `{{ content }}` rendered as literal text on pages that use includes: post variables are not expanded inside include files - they are only expanded in post templates. Move that markup out of the include and into the template itself.
 
 ## Build succeeds but no HTML in output
 

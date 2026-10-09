@@ -105,9 +105,11 @@ Files in the `includes/` directory are referenced with the `{{ include:filename 
 
 During the build, every `{{ include:filename }}` occurrence is replaced with the full contents of `includes/filename`. If your project has no `includes/` directory, builds work as before - existing projects are unaffected.
 
+The example site in [`EXAMPLES/`](./EXAMPLES/) uses includes on every page - see `includes/navbar.html`, `includes/footer.html` and `includes/tag-cloud.html` for live reference files.
+
 ### What gets expanded inside an include
 
-- **Tag notations always work**: `{{ tagname }}` inside an include file is expanded into tag previews when the include is loaded (before insertion). **Tag notations also now work directly in post templates** - `generatePosts()` expands them after include insertion. So both of the following produce tag previews:
+- **Tag notations always work**: `{{ tagname }}` inside an include file is expanded into tag previews when the include is loaded, before the include is inserted anywhere. Tag notations also work directly in post templates. So both of the following produce tag previews:
   ```html
   <!-- In templates/post.html -->
   <aside class="blog-sidebar">{{ blog }}</aside>
@@ -115,8 +117,9 @@ During the build, every `{{ include:filename }}` occurrence is replaced with the
   <!-- Inside includes/sidebar.html -->
   <div>{{ blog }}</div>
   ```
-- **Post variables do not**: `{{ title }}`, `{{ date }}`, `{{ excerpt }}` and `{{ content }}` are not expanded inside includes. They are expanded where the template is rendered, after include insertion, so any `{{ title }}` you put in an include file lands in the output as a literal string. Keep includes free of post variables.
+- **Post variables never do**: `{{ title }}`, `{{ date }}`, `{{ excerpt }}` and `{{ content }}` are never expanded inside includes. Includes are inserted after all post variables are resolved, so any post variable you put in an include file lands in the output as a literal string. Keep includes free of post variables.
 - **Nested includes do not**: an `{{ include:... }}` notation inside an include file is *not* expanded. Compose includes from plain HTML only, not from other includes.
+- **Tag notations in post content do not**: tag notations inside your Markdown are never expanded - they only work in root HTML files and templates. Include notations in post content, however, are expanded by the include pass at the end of post rendering.
 
 ### Example
 

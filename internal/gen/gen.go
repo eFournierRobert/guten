@@ -292,7 +292,7 @@ func (g *Generator) previewBuilder(tag string) string {
 
 			for _, p := range t.Posts {
 				builder.WriteString("<div class=\"preview\">\n")
-				builder.WriteString("<a href=\"" + p.GetPostLink() + "\">")
+				builder.WriteString("<a href=\"/" + p.GetPostLink() + "\">")
 				builder.WriteString("<p>" + p.Metadata.Title + "</p>")
 				builder.WriteString("</a>\n")
 				builder.WriteString("<i>" + p.Metadata.Excerpt + "</i>\n")

@@ -48,4 +48,4 @@ See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) for a step-by-step guide.
 - **[Project Structure](./docs/STRUCTURE.md)** - Required directories and files, post frontmatter, output behavior
 - **[Templates Reference](./docs/TEMPLATES.md)** - Template variables, tag previews, reserved tag names
 - **[Troubleshooting](./docs/TROUBLESHOOTING.md)** - Common errors and how to fix them
-- **[Example Site](./docs/EXAMPLES/)** - Working example posts, template and assets
+- **[Example Site](./docs/EXAMPLES/)** - Working example site with includes, tag previews and multiple templates
