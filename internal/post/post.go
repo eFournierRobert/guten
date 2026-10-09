@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"slices"
 	"strings"
@@ -26,8 +27,8 @@ var reservedTags = []string{"title", "content", "date", "excerpt"}
 
 // Tag represents a collection of posts sharing the same tag.
 type Tag struct {
-	Name  string   // Tag name (used in {{ tagname }} template syntax)
-	Posts []*Post  // Posts belonging to this tag
+	Name  string  // Tag name (used in {{ tagname }} template syntax)
+	Posts []*Post // Posts belonging to this tag
 }
 
 // Metadata contains YAML frontmatter data for a post.
@@ -42,8 +43,26 @@ type Metadata struct {
 // Post represents a Markdown file with YAML frontmatter.
 // The Path field contains the relative path to the post file.
 type Post struct {
-	Path     string      // File path to the post
-	Metadata Metadata    // Parsed YAML frontmatter
+	Path     string   // File path to the post
+	Metadata Metadata // Parsed YAML frontmatter
+}
+
+var defaultQuotes = []string{
+	"Every page begins with a blank one.",
+	"TODO: write something interesting.",
+	"A thought worth keeping.",
+	"Begin anywhere.",
+	"One thing at a time.",
+	"The best time to write was yesterday.",
+	"Make something. Write it down.",
+	"Less, but better.",
+	"Nothing fancy. Just words.",
+	"There is no perfect first draft.",
+	"Small things add up.",
+	"Ideas are cheap. Ship them.",
+
+	/// Ken Thompson
+	"\"One of my most productive days was throwing away 1,000 lines of code.\"\n-Ken Thompson",
 }
 
 // New creates a Post from a file path by parsing its YAML frontmatter.
@@ -58,6 +77,67 @@ func New(path string) (Post, error) {
 		return Post{}, err
 	}
 	return p, nil
+}
+
+// NewEmpty creates a new post file at path with default metadata
+// (today's date, "post" template) and a random placeholder quote as content.
+// If path already exists as a file, it asks before overwriting; directories are never overwritten.
+func NewEmpty(path string) (Post, error) {
+	f, err := os.Stat(path)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return Post{}, err
+	}
+	if err == nil {
+		if f.IsDir() {
+			return Post{}, errors.New("cannot overwrite an existing directory")
+		}
+
+		var userInput string
+		fmt.Printf("Error: %s already exists\n", path)
+		fmt.Print("Do you want to overwrite it? [y/N] ")
+		fmt.Scanln(&userInput)
+
+		if strings.ToLower(userInput) != "y" {
+			return Post{}, errors.New("refused to overwrite existing file")
+		}
+	}
+
+	metadata := Metadata{
+		Date:     time.Now(),
+		Tags:     []string{},
+		Title:    "New post",
+		Excerpt:  "One great excerpt",
+		Template: "post",
+	}
+
+	p := Post{
+		Path:     path,
+		Metadata: metadata,
+	}
+
+	content := p.buildPostMdContent()
+
+	if err := os.WriteFile(path, content, 0640); err != nil {
+		return Post{}, err
+	}
+	return p, nil
+}
+
+// buildPostMdContent writes the post's YAML frontmatter followed by a random
+// placeholder quote, ready to be saved as the post file.
+func (p *Post) buildPostMdContent() []byte {
+	var sb strings.Builder
+	sb.WriteString("---\n")
+	sb.WriteString(fmt.Sprintf("date: %s\n", p.Metadata.Date.Format(time.DateOnly)))
+	sb.WriteString(fmt.Sprintf("title: %s\n", p.Metadata.Title))
+	sb.WriteString(fmt.Sprintf("excerpt: %s\n", p.Metadata.Excerpt))
+	sb.WriteString(fmt.Sprintf("template: %s\n", p.Metadata.Template))
+	sb.WriteString("tags: \n")
+	sb.WriteString("---\n")
+
+	sb.WriteString("\n" + defaultQuotes[rand.Intn(len(defaultQuotes))])
+
+	return []byte(sb.String())
 }
 
 // GetHTMLContent reads the Markdown content from the post file and converts it to HTML.

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"guten/internal/gen"
 	"guten/internal/init_project"
+	"guten/internal/post"
 	"guten/internal/serve"
 	"os"
 )
@@ -13,6 +14,7 @@ func main() {
 	build := flag.Bool("build", false, "Generate the static website")
 	peek := flag.Bool("peek", false, "Serve the web pages")
 	initDir := flag.String("init", "", "Generate a new Guten project in the given directory")
+	newPost := flag.String("new-post", "", "Create a new post at the given path.")
 	flag.Parse()
 
 	if *initDir != "" {
@@ -22,6 +24,16 @@ func main() {
 		}
 
 		fmt.Printf("Project %s initialized successfully!\n", *initDir)
+		os.Exit(0)
+	}
+
+	if *newPost != "" {
+		if _, err := post.NewEmpty(*newPost); err != nil {
+			fmt.Println(err)
+			os.Exit(4)
+		}
+
+		fmt.Printf("New post %s created!\n", *newPost)
 		os.Exit(0)
 	}
 
