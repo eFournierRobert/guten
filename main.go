@@ -30,7 +30,7 @@ func main() {
 	if *newPost != "" {
 		if _, err := post.NewEmpty(*newPost); err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			os.Exit(4)
 		}
 
 		fmt.Printf("New post %s created!\n", *newPost)

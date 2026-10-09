@@ -40,6 +40,14 @@ type Metadata struct {
 	Template string    // Template name (must match templates/{name}.html)
 }
 
+type metadataYAML struct {
+	Date     string   `yaml:"date"`
+	Tags     []string `yaml:"tags"`
+	Title    string   `yaml:"title"`
+	Excerpt  string   `yaml:"excerpt"`
+	Template string   `yaml:"template"`
+}
+
 // Post represents a Markdown file with YAML frontmatter.
 // The Path field contains the relative path to the post file.
 type Post struct {
@@ -80,6 +88,20 @@ func New(path string) (Post, error) {
 }
 
 func NewEmpty(path string) (Post, error) {
+	_, err := os.Stat(path)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return Post{}, err
+	} else {
+		var userInput string
+		fmt.Printf("Error: %s already exists\n", path)
+		fmt.Print("Do you want to overwrite it? [y/N] ")
+		fmt.Scanln(&userInput)
+
+		if strings.ToLower(userInput) != "y" {
+			return Post{}, errors.New("refused to overwrite existing file or directory")
+		}
+	}
+
 	metadata := Metadata{
 		Date:     time.Now(),
 		Tags:     []string{},
@@ -105,7 +127,15 @@ func NewEmpty(path string) (Post, error) {
 }
 
 func (p *Post) buildPostMdContent() ([]byte, error) {
-	marshaledMetadata, err := yaml.Marshal(p.Metadata)
+	metadataOutput := metadataYAML{
+		Date:     p.Metadata.Date.Format(time.DateOnly),
+		Tags:     p.Metadata.Tags,
+		Title:    p.Metadata.Title,
+		Excerpt:  p.Metadata.Excerpt,
+		Template: p.Metadata.Template,
+	}
+
+	marshaledMetadata, err := yaml.Marshal(metadataOutput)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +143,7 @@ func (p *Post) buildPostMdContent() ([]byte, error) {
 	var sb strings.Builder
 	sb.WriteString("---\n")
 	sb.WriteString(string(marshaledMetadata))
-	sb.WriteString("\n---\n")
+	sb.WriteString("---\n")
 
 	sb.WriteString("\n" + defaultQuotes[rand.Intn(len(defaultQuotes))])
 
