@@ -104,7 +104,7 @@ func NewEmpty(path string) (Post, error) {
 		Tags:     []string{},
 		Title:    "New post",
 		Excerpt:  "One great excerpt",
-		Template: "template",
+		Template: "post",
 	}
 
 	p := Post{
