@@ -21,6 +21,7 @@ const assetsDir = "assets"
 const postsDir = "posts"
 const indexFile = "index.html"
 const templateDir = "templates"
+const includesDir = "includes"
 
 // Template variable tags available in template files.
 const titleTag = "{{ title }}"
@@ -28,11 +29,17 @@ const contentTag = "{{ content }}"
 const dateTag = "{{ date }}"
 const excerptTag = "{{ excerpt }}"
 
+type Include struct {
+	name        string
+	fileContent []byte
+}
+
 // Generator handles the static site generation process.
 // It collects posts, builds tag indexes, and generates output files.
 type Generator struct {
-	posts []post.Post
-	tags  []post.Tag
+	posts    []post.Post
+	tags     []post.Tag
+	includes []Include
 }
 
 // GenerateWebsite builds a static site from posts and templates.
@@ -47,6 +54,10 @@ func GenerateWebsite() error {
 	}
 
 	generator := Generator{}
+
+	if err := generator.getAllIncludesTags(); err != nil {
+		return err
+	}
 
 	if err := generator.copyAssets(); err != nil {
 		return err
@@ -116,6 +127,11 @@ func (g *Generator) copyRootHtml() error {
 		for _, t := range g.tags {
 			notation := fmt.Sprintf("{{ %s }}", t.Name)
 			content = []byte(strings.ReplaceAll(string(content), notation, g.previewBuilder(t.Name)))
+
+			for _, include := range g.includes {
+				notation = fmt.Sprintf("{{ include:%s }}", include.name)
+				content = []byte(strings.ReplaceAll(string(content), notation, string(include.fileContent)))
+			}
 		}
 
 		if _, err := fOut.Write(content); err != nil {
@@ -277,4 +293,30 @@ func (g *Generator) previewBuilder(tag string) string {
 	}
 
 	return builder.String()
+}
+
+func (g *Generator) getAllIncludesTags() error {
+	entries, err := os.ReadDir(includesDir)
+	if err != nil {
+		return err
+	}
+
+	var t []Include
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			content, err := os.ReadFile(entry.Name())
+			if err != nil {
+				return err
+			}
+
+			t = append(t, Include{
+				name:        entry.Name(),
+				fileContent: content,
+			})
+		}
+	}
+
+	g.includes = t
+
+	return nil
 }
