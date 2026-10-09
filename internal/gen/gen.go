@@ -181,6 +181,11 @@ func (g *Generator) generatePosts() error {
 			templateStr = strings.Replace(templateStr, excerptTag, p.Metadata.Excerpt, -1)
 		}
 
+		for _, include := range g.includes {
+			notation := fmt.Sprintf("{{ include:%s }}", include.name)
+			templateStr = strings.ReplaceAll(templateStr, notation, string(include.fileContent))
+		}
+
 		if strings.Contains(templateStr, contentTag) {
 			content, err := p.GetHTMLContent()
 			if err != nil {
