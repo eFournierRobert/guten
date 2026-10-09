@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"slices"
 	"strings"
@@ -26,8 +27,8 @@ var reservedTags = []string{"title", "content", "date", "excerpt"}
 
 // Tag represents a collection of posts sharing the same tag.
 type Tag struct {
-	Name  string   // Tag name (used in {{ tagname }} template syntax)
-	Posts []*Post  // Posts belonging to this tag
+	Name  string  // Tag name (used in {{ tagname }} template syntax)
+	Posts []*Post // Posts belonging to this tag
 }
 
 // Metadata contains YAML frontmatter data for a post.
@@ -42,8 +43,26 @@ type Metadata struct {
 // Post represents a Markdown file with YAML frontmatter.
 // The Path field contains the relative path to the post file.
 type Post struct {
-	Path     string      // File path to the post
-	Metadata Metadata    // Parsed YAML frontmatter
+	Path     string   // File path to the post
+	Metadata Metadata // Parsed YAML frontmatter
+}
+
+var defaultQuotes = []string{
+	"Every page begins with a blank one.",
+	"TODO: write something interesting.",
+	"A thought worth keeping.",
+	"Begin anywhere.",
+	"One thing at a time.",
+	"The best time to write was yesterday.",
+	"Make something. Write it down.",
+	"Less, but better.",
+	"Nothing fancy. Just words.",
+	"There is no perfect first draft.",
+	"Small things add up.",
+	"Ideas are cheap. Ship them.",
+
+	/// Ken Thompson
+	"\"One of my most productive days was throwing away 1,000 lines of code.\"\n-Ken Thompson",
 }
 
 // New creates a Post from a file path by parsing its YAML frontmatter.
@@ -58,6 +77,47 @@ func New(path string) (Post, error) {
 		return Post{}, err
 	}
 	return p, nil
+}
+
+func NewEmpty(path string) (Post, error) {
+	metadata := Metadata{
+		Date:     time.Now(),
+		Tags:     []string{},
+		Title:    "New Guten posts",
+		Excerpt:  "",
+		Template: "[change for your template]",
+	}
+
+	p := Post{
+		Path:     path,
+		Metadata: metadata,
+	}
+
+	content, err := p.buildPostMdContent()
+	if err != nil {
+		return Post{}, err
+	}
+
+	if err := os.WriteFile(path, content, 0640); err != nil {
+		return Post{}, err
+	}
+	return p, nil
+}
+
+func (p *Post) buildPostMdContent() ([]byte, error) {
+	marshaledMetadata, err := yaml.Marshal(p.Metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	var sb strings.Builder
+	sb.WriteString("---\n")
+	sb.WriteString(string(marshaledMetadata))
+	sb.WriteString("\n---\n")
+
+	sb.WriteString("\n" + defaultQuotes[rand.Intn(len(defaultQuotes))])
+
+	return []byte(sb.String()), nil
 }
 
 // GetHTMLContent reads the Markdown content from the post file and converts it to HTML.
