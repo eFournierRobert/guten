@@ -256,7 +256,7 @@ func (g *Generator) getAllPosts(dir string) error {
 		posts = append(posts, p)
 	}
 
-	for i, _ := range g.tags {
+	for i := range g.tags {
 		slices.SortFunc(g.tags[i].Posts, func(a, b *post.Post) int {
 			aDate := a.Metadata.Date
 			bDate := b.Metadata.Date
