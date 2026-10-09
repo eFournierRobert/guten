@@ -40,14 +40,6 @@ type Metadata struct {
 	Template string    // Template name (must match templates/{name}.html)
 }
 
-type metadataYAML struct {
-	Date     string   `yaml:"date"`
-	Tags     []string `yaml:"tags"`
-	Title    string   `yaml:"title"`
-	Excerpt  string   `yaml:"excerpt"`
-	Template string   `yaml:"template"`
-}
-
 // Post represents a Markdown file with YAML frontmatter.
 // The Path field contains the relative path to the post file.
 type Post struct {
@@ -88,26 +80,31 @@ func New(path string) (Post, error) {
 }
 
 func NewEmpty(path string) (Post, error) {
-	_, err := os.Stat(path)
+	f, err := os.Stat(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return Post{}, err
-	} else {
+	}
+	if err == nil {
+		if f.IsDir() {
+			return Post{}, errors.New("cannot overwrite an existing directory")
+		}
+
 		var userInput string
 		fmt.Printf("Error: %s already exists\n", path)
 		fmt.Print("Do you want to overwrite it? [y/N] ")
 		fmt.Scanln(&userInput)
 
 		if strings.ToLower(userInput) != "y" {
-			return Post{}, errors.New("refused to overwrite existing file or directory")
+			return Post{}, errors.New("refused to overwrite existing file")
 		}
 	}
 
 	metadata := Metadata{
 		Date:     time.Now(),
 		Tags:     []string{},
-		Title:    "New Guten posts",
-		Excerpt:  "",
-		Template: "[change for your template]",
+		Title:    "New post",
+		Excerpt:  "One great excerpt",
+		Template: "template",
 	}
 
 	p := Post{
@@ -115,10 +112,7 @@ func NewEmpty(path string) (Post, error) {
 		Metadata: metadata,
 	}
 
-	content, err := p.buildPostMdContent()
-	if err != nil {
-		return Post{}, err
-	}
+	content := p.buildPostMdContent()
 
 	if err := os.WriteFile(path, content, 0640); err != nil {
 		return Post{}, err
@@ -126,28 +120,19 @@ func NewEmpty(path string) (Post, error) {
 	return p, nil
 }
 
-func (p *Post) buildPostMdContent() ([]byte, error) {
-	metadataOutput := metadataYAML{
-		Date:     p.Metadata.Date.Format(time.DateOnly),
-		Tags:     p.Metadata.Tags,
-		Title:    p.Metadata.Title,
-		Excerpt:  p.Metadata.Excerpt,
-		Template: p.Metadata.Template,
-	}
-
-	marshaledMetadata, err := yaml.Marshal(metadataOutput)
-	if err != nil {
-		return nil, err
-	}
-
+func (p *Post) buildPostMdContent() []byte {
 	var sb strings.Builder
 	sb.WriteString("---\n")
-	sb.WriteString(string(marshaledMetadata))
+	sb.WriteString(fmt.Sprintf("date: %s\n", p.Metadata.Date.Format(time.DateOnly)))
+	sb.WriteString(fmt.Sprintf("title: %s\n", p.Metadata.Title))
+	sb.WriteString(fmt.Sprintf("excerpt: %s\n", p.Metadata.Excerpt))
+	sb.WriteString(fmt.Sprintf("template: %s\n", p.Metadata.Template))
+	sb.WriteString("tags: \n")
 	sb.WriteString("---\n")
 
 	sb.WriteString("\n" + defaultQuotes[rand.Intn(len(defaultQuotes))])
 
-	return []byte(sb.String()), nil
+	return []byte(sb.String())
 }
 
 // GetHTMLContent reads the Markdown content from the post file and converts it to HTML.
