@@ -17,7 +17,7 @@ guten -init my-website
 cd my-website
 ```
 
-This creates the required `posts/`, `templates/` and `assets/` directories along with a basic `index.html`. The `posts/` and `templates/` directories start empty, so you still need to create your first post and template (next steps). The post can be created with `guten -new-post` or written by hand.
+This creates the required `posts/`, `templates/` and `assets/` directories, the optional `includes/` directory, and a basic `index.html`. The `posts/` and `templates/` directories start empty, so you still need to create your first post and template (next steps). The post can be created with `guten -new-post` or written by hand.
 
 ## Step 3: Create a Post
 
@@ -88,6 +88,8 @@ my-website/
 ├── index.html              # Required: copied to out/
 ├── assets/                 # Required: copied to out/
 │   └── (your static files)
+├── includes/               # Optional: reusable HTML snippets
+│   └── (e.g. footer.html)
 ├── posts/
 │   └── hello-world.md      # Your first post
 ├── templates/
@@ -105,3 +107,4 @@ my-website/
 - Organize posts into subdirectories
 - Add CSS/JS to your `assets/` folder
 - Create templates for different pages (about, contact, etc.)
+- Share markup between pages with includes - see [TEMPLATES.md](./TEMPLATES.md#includes)

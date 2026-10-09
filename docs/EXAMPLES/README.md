@@ -1,21 +1,42 @@
 # Example Site
 
-This directory contains a working example site that shows how to structure your guten project.
+This directory contains a working example site that demonstrates guten's features, including **includes**, **tag expansions in templates**, and **multiple templates**.
 
 ## Structure
 
 ```
 EXAMPLES/
-├── index.html           # Homepage with tag previews
+├── index.html                        # Homepage - uses tag previews & navbar include
 ├── assets/
 │   └── css/
-│       └── style.css    # Basic styles
+│       └── style.css                 # Site styles
+├── includes/
+│   ├── navbar.html                   # Shared navigation bar
+│   └── footer.html                   # Shared footer, included via {{ include:footer.html }}
 ├── posts/
-│   ├── hello-world.md   # First example post
-│   └── a-second-post.md # Second example post
-└── templates/
-    └── post.html        # Template for blog posts
+│   ├── hello-world.md                 # First example post
+│   ├── a-second-post.md               # Second example post
+│   └── demo-tag-in-template.md        # Demo showing tags work in templates
+├── templates/
+│   ├── post.html                     # Blog post template - uses includes + tag expansion
+│   └── project.html                  # Project showcase template
+└── out/                              # Generated site (if you run guten -build)
 ```
+
+## Featured Include Patterns
+
+This example showcases the `{{ include:filename }}` feature:
+
+- **`navbar.html`** - A navigation bar used in BOTH root HTML files and post templates. This demonstrates cross-context reuse.
+- **`footer.html`** - A footer included at the end of every page.
+
+**Why this matters:** You define the navigation and footer once, and they appear consistently across your entire site, whether in the homepage, blog posts, or other pages - without CSS frameworks or JavaScript!
+
+## Featured Tag-in-Template Pattern
+
+The `post.html` template includes a sidebar with `{{ blog }}` to show all blog posts. This demonstrates that **tag expansions work directly in post templates** (added in recent versions), not just in root HTML files like `index.html`.
+
+See [TEMPLATES.md](../TEMPLATES.md) for full details on `{{ tagname }}` tag expansions.
 
 ## Try the Example
 
@@ -34,9 +55,9 @@ guten -init my-site
 cd my-site
 
 # Copy the example content
-mkdir -p assets/css    # init only creates the empty assets/ directory
 cp ../docs/EXAMPLES/index.html .
 cp ../docs/EXAMPLES/assets/css/style.css assets/css/
+cp ../docs/EXAMPLES/includes/*.html includes/
 cp ../docs/EXAMPLES/posts/*.md posts/
 cp ../docs/EXAMPLES/templates/*.html templates/
 
@@ -48,6 +69,9 @@ guten -peek
 
 ## Notes
 
-- The `index.html` file uses `{{ blog }}` to show all posts tagged with `blog`
+- The `index.html` file uses `{{ blog }}` to show posts tagged with `blog`
+- Both `index.html`, `templates/post.html`, and `templates/project.html` use `{{ include:navbar.html }}` and `{{ include:footer.html }}` for shared layout
+- `templates/post.html` also demonstrates `{{ blog }}` tag expansion in a template sidebar
 - Posts are in `posts/` directory with `.md` extension
 - Templates are in `templates/` directory with naming convention `{name}.html`
+- `posts/` can contain subdirectories - structure is preserved in output

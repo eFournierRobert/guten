@@ -20,7 +20,7 @@ guten -peek
 
 - `main.go` - Entry point with `-init`, `-new-post`, `-build` and `-peek` flags
 - `internal/init_project/init.go` - Initializes a directory into a new guten project (`-init` flag)
-- `internal/gen/gen.go` - Website generator (parses posts, applies templates)
+- `internal/gen/gen.go` - Website generator (parses posts, applies templates, expands `{{ include:filename }}` notations)
 - `internal/post/post.go` - Post parsing with YAML frontmatter, Markdown rendering, and new post creation (`-new-post` flag)
 - `internal/serve/serve.go` - HTTP server (calls gen, then starts server)
 - `internal/server/server.go` - Simple HTTP static file server on port 5000
@@ -32,6 +32,7 @@ guten -peek
 - `assets/` directory - copied to `out/assets/`
 - `posts/` directory with `.md` files - processed and output to `out/posts/`
 - `templates/` directory with `.html` files - referenced by post templates
+- `includes/` directory (optional) with `.html` files - reusable snippets inlined where referenced; projects without it still build
 
 **Directory structure:**
 
@@ -42,6 +43,8 @@ my-site/
 │   └── css/, js/, img/ # Your assets
 ├── posts/              # Markdown posts directory
 │   └── *.md            # Post files with YAML frontmatter
+├── includes/           # Optional - Reusable HTML includes
+│   └── *.html          # Referenced with {{ include:filename }}
 └── templates/          # HTML templates directory
     └── *.html          # Template files
 ```
@@ -76,6 +79,20 @@ Templates support:
 - `{{ content }}` - Replaced with rendered HTML content
 - `{{ date }}` - Replaced with post date
 - `{{ excerpt }}` - Replaced with post excerpt
+- **Tags also work**: `{{ tagname }}` is replaced with a tag preview (same as in root HTML files)
+
+## Includes (optional)
+
+Files in `includes/` are reusable HTML snippets referenced with `{{ include:filename }}` in templates and root `.html` files. Includes are **not** copied to `out/` - they are inlined where referenced.
+
+Rules:
+- Matched by full file name: `{{ include:footer.html }}` → `includes/footer.html`
+- Only files directly in `includes/` are used (subdirectories are skipped)
+- Missing `includes/` directory is fine (backward compatibility for existing projects)
+- Includes are pre-processed when loaded: `{{ tagname }}` notations inside them ARE expanded (tag previews), even when the include ends up in a post template
+- Post variables are NOT expanded inside includes: `{{ title }}`, `{{ date }}`, `{{ excerpt }}`, `{{ content }}` land in the output as literal strings
+- Nested includes are NOT supported: `{{ include:... }}` inside an include file is not expanded
+- Non-matching notations are left as-is in the output (no build error)
 
 ## Reserved Tags
 

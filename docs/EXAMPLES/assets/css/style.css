@@ -57,3 +57,33 @@ pre code {
     background: transparent;
     padding: 0;
 }
+
+/* Post layout */
+.post {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.post-content {
+    margin-bottom: 30px;
+}
+
+.post-sidebar {
+    background: #f9f9f9;
+    padding: 20px;
+    border-left: 4px solid #eee;
+    margin-top: 30px;
+}
+
+.post-sidebar h3 {
+    margin-top: 0;
+}
+
+.project {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.project-content {
+    margin-bottom: 30px;
+}

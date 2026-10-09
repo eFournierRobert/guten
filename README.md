@@ -29,7 +29,7 @@ guten -build   # Build to out/
 guten -peek    # Build and serve on http://localhost:5000
 ```
 
-`guten -init` creates a basic `index.html` plus the `assets/`, `posts/` and `templates/` directories. The `posts/` and `templates/` directories start empty and the generated `index.html` is a placeholder - you still need to add your own content before building. You can also initialize the current directory with `guten -init .`.
+`guten -init` creates a basic `index.html` plus the `assets/`, `posts/`, `templates/` and `includes/` directories. The `assets/`, `posts/`, `templates/` and `includes/` directories start empty and the generated `index.html` is a placeholder - you still need to add your own content before building. `includes/` is optional (reusable HTML snippets for `{{ include:filename }}`) and older projects without it build fine. You can also initialize the current directory with `guten -init .`.
 
 See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) for a step-by-step guide.
 
@@ -37,9 +37,9 @@ See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) for a step-by-step guide.
 
 | Flag | What it does |
 |------|-------------|
-| `-init <dir>` | Scaffolds a new project in `dir`: creates `index.html`, `assets/`, `posts/` and `templates/`. The directory must not already exist, except `guten -init .` which initializes the current directory |
+| `-init <dir>` | Scaffolds a new project in `dir`: creates `index.html`, `assets/`, `posts/`, `templates/` and `includes/`. The directory must not already exist, except `guten -init .` which initializes the current directory |
 | `-new-post <path>` | Writes a new starter post: frontmatter with today's date and the `post` template, plus a placeholder quote as content. If the file already exists, it asks before overwriting; you must then replace the placeholder title, excerpt and content |
-| `-build` | Generates the static site in `out/`. The output directory is completely cleared and rebuilt on each run |
+| `-build` | Generates the static site in `out/`: root `.html` files get tag previews and includes expanded, posts are rendered through their templates. The output directory is completely cleared and rebuilt on each run |
 | `-peek` | Builds the site (same as `-build`), then serves `out/` over HTTP at `http://localhost:5000` (Ctrl+C to stop) |
 
 ## Documentation

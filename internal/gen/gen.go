@@ -4,6 +4,8 @@ package gen
 // It parses Markdown posts with YAML frontmatter, applies HTML templates,
 // and generates a static site in the out/ directory.
 // Requires posts/, templates/, assets/, and index.html in the project root.
+// The includes/ directory is optional and provides {{ include:filename }}
+// reusable HTML snippets.
 
 import (
 	"errors"
@@ -20,7 +22,6 @@ import (
 const outDir = "out"
 const assetsDir = "assets"
 const postsDir = "posts"
-const indexFile = "index.html"
 const templateDir = "templates"
 const includesDir = "includes"
 
@@ -30,6 +31,9 @@ const contentTag = "{{ content }}"
 const dateTag = "{{ date }}"
 const excerptTag = "{{ excerpt }}"
 
+// Include is a reusable HTML snippet loaded from the includes/ directory.
+// It is referenced in templates and root HTML files with the
+// {{ include:filename }} notation.
 type Include struct {
 	name        string
 	fileContent []byte
@@ -56,16 +60,18 @@ func GenerateWebsite() error {
 
 	generator := Generator{}
 
-	if err := generator.getAllIncludesTags(); err != nil {
-		return err
-	}
-
 	if err := generator.copyAssets(); err != nil {
 		return err
 	}
 
 	err := generator.getAllPosts(postsDir)
 	if err != nil {
+		return err
+	}
+
+	// Includes must be collected after posts so that tag notations inside
+	// include files ({{ tagname }}) can be expanded with the built tag index.
+	if err := generator.getAllIncludesTags(); err != nil {
 		return err
 	}
 
@@ -125,14 +131,11 @@ func (g *Generator) copyRootHtml() error {
 			return fmt.Errorf("error while generating %s: %w", filename, err)
 		}
 
-		for _, t := range g.tags {
-			notation := fmt.Sprintf("{{ %s }}", t.Name)
-			content = []byte(strings.ReplaceAll(string(content), notation, g.previewBuilder(t.Name)))
+		content = g.expandAllTags(content)
 
-			for _, include := range g.includes {
-				notation = fmt.Sprintf("{{ include:%s }}", include.name)
-				content = []byte(strings.ReplaceAll(string(content), notation, string(include.fileContent)))
-			}
+		for _, include := range g.includes {
+			notation := fmt.Sprintf("{{ include:%s }}", include.name)
+			content = []byte(strings.ReplaceAll(string(content), notation, string(include.fileContent)))
 		}
 
 		if _, err := fOut.Write(content); err != nil {
@@ -186,6 +189,8 @@ func (g *Generator) generatePosts() error {
 			notation := fmt.Sprintf("{{ include:%s }}", include.name)
 			templateStr = strings.ReplaceAll(templateStr, notation, string(include.fileContent))
 		}
+
+		templateStr = string(g.expandAllTags([]byte(templateStr)))
 
 		if strings.Contains(templateStr, contentTag) {
 			content, err := p.GetHTMLContent()
@@ -301,10 +306,17 @@ func (g *Generator) previewBuilder(tag string) string {
 	return builder.String()
 }
 
+// getAllIncludesTags loads all files from the includes/ directory and
+// pre-expands {{ tagname }} notations in them, so that includes can display
+// tag previews when inserted into templates or root HTML files.
+// Projects without an includes/ directory are supported for backward
+// compatibility and are treated as having no includes.
+// Note: {{ include:filename }} inside an include file is not expanded -
+// nested includes are not supported.
 func (g *Generator) getAllIncludesTags() error {
 	entries, err := os.ReadDir(includesDir)
 	if err != nil {
-		// Backward compatibility
+		// Backward compatibility for projects that doesn't have includes/
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
 		}
@@ -319,6 +331,8 @@ func (g *Generator) getAllIncludesTags() error {
 				return err
 			}
 
+			content = g.expandAllTags(content)
+
 			t = append(t, Include{
 				name:        entry.Name(),
 				fileContent: content,
@@ -329,4 +343,15 @@ func (g *Generator) getAllIncludesTags() error {
 	g.includes = t
 
 	return nil
+}
+
+// Expands all tags in the given content bytes and returns the updated bytes
+// content.
+func (g *Generator) expandAllTags(content []byte) []byte {
+	for _, tag := range g.tags {
+		notation := fmt.Sprintf("{{ %s }}", tag.Name)
+		content = []byte(strings.ReplaceAll(string(content), notation, g.previewBuilder(tag.Name)))
+	}
+
+	return content
 }
