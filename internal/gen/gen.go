@@ -24,6 +24,7 @@ const assetsDir = "assets"
 const postsDir = "posts"
 const templateDir = "templates"
 const includesDir = "includes"
+const previewsDir = "previews"
 
 // Template variable tags available in template files.
 const titleTag = "{{ title }}"
@@ -31,10 +32,7 @@ const contentTag = "{{ content }}"
 const dateTag = "{{ date }}"
 const excerptTag = "{{ excerpt }}"
 
-// Include is a reusable HTML snippet loaded from the includes/ directory.
-// It is referenced in templates and root HTML files with the
-// {{ include:filename }} notation.
-type Include struct {
+type ExtraFile struct {
 	name        string
 	fileContent []byte
 }
@@ -44,7 +42,8 @@ type Include struct {
 type Generator struct {
 	posts    []post.Post
 	tags     []post.Tag
-	includes []Include
+	includes []ExtraFile
+	previews []ExtraFile
 }
 
 // GenerateWebsite builds a static site from posts and templates.
@@ -71,7 +70,11 @@ func GenerateWebsite() error {
 
 	// Includes must be collected after posts so that tag notations inside
 	// include files ({{ tagname }}) can be expanded with the built tag index.
-	if err := generator.getAllIncludesTags(); err != nil {
+	if err := generator.getAllIncludes(); err != nil {
+		return err
+	}
+
+	if err := generator.getAllPreviews(); err != nil {
 		return err
 	}
 
@@ -284,6 +287,16 @@ func (g *Generator) getAllPosts(dir string) error {
 // The output is a div with class "{tag}-previews" containing individual preview divs.
 // Each preview has links to the post and displays title + excerpt.
 func (g *Generator) previewBuilder(tag string) string {
+	var preview *ExtraFile
+	if g.previews != nil {
+		for _, p := range g.previews {
+			if p.name == tag+".html" {
+				preview = &p
+				break
+			}
+		}
+	}
+
 	builder := strings.Builder{}
 
 	for _, t := range g.tags {
@@ -291,12 +304,23 @@ func (g *Generator) previewBuilder(tag string) string {
 			builder.WriteString("<div class=\"" + t.Name + "-previews\">")
 
 			for _, p := range t.Posts {
-				builder.WriteString("<div class=\"preview\">\n")
-				builder.WriteString("<a href=\"/" + p.GetPostLink() + "\">")
-				builder.WriteString("<p>" + p.Metadata.Title + "</p>")
-				builder.WriteString("</a>\n")
-				builder.WriteString("<i>" + p.Metadata.Excerpt + "</i>\n")
-				builder.WriteString("</div>\n")
+				if preview == nil {
+					builder.WriteString("<div class=\"preview\">\n")
+					builder.WriteString("<a href=\"/" + p.GetPostLink() + "\">")
+					builder.WriteString("<p>" + p.Metadata.Title + "</p>")
+					builder.WriteString("</a>\n")
+					builder.WriteString("<i>" + p.Metadata.Excerpt + "</i>\n")
+					builder.WriteString("</div>\n")
+				} else {
+					fileContent := string(preview.fileContent)
+
+					fullContent := strings.ReplaceAll(fileContent, titleTag, p.Metadata.Title)
+					fullContent = strings.ReplaceAll(fullContent, dateTag, p.Metadata.Date.Format(time.DateOnly))
+					fullContent = strings.ReplaceAll(fullContent, excerptTag, p.Metadata.Excerpt)
+					fullContent = strings.ReplaceAll(fullContent, "{{ link }}", "/"+p.GetPostLink())
+					builder.WriteString(fullContent)
+					builder.WriteString("\n")
+				}
 			}
 
 			builder.WriteString("</div>\n")
@@ -306,43 +330,54 @@ func (g *Generator) previewBuilder(tag string) string {
 	return builder.String()
 }
 
-// getAllIncludesTags loads all files from the includes/ directory and
-// pre-expands {{ tagname }} notations in them, so that includes can display
-// tag previews when inserted into templates or root HTML files.
-// Projects without an includes/ directory are supported for backward
-// compatibility and are treated as having no includes.
-// Note: {{ include:filename }} inside an include file is not expanded -
-// nested includes are not supported.
-func (g *Generator) getAllIncludesTags() error {
-	entries, err := os.ReadDir(includesDir)
+func (g *Generator) getAllIncludes() error {
+	extra, err := g.getAllExtraFile(includesDir)
 	if err != nil {
-		// Backward compatibility for projects that doesn't have includes/
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
 		return err
 	}
 
-	var t []Include
+	g.includes = extra
+	return nil
+}
+
+func (g *Generator) getAllPreviews() error {
+	extra, err := g.getAllExtraFile(previewsDir)
+	if err != nil {
+		return err
+	}
+
+	g.previews = extra
+	return nil
+}
+
+func (g *Generator) getAllExtraFile(directory string) ([]ExtraFile, error) {
+	entries, err := os.ReadDir(directory)
+	if err != nil {
+		// Backward compatibility for projects that doesn't have includes/
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var t []ExtraFile
 	for _, entry := range entries {
 		if !entry.IsDir() {
-			content, err := os.ReadFile(filepath.Join(includesDir, entry.Name()))
+			content, err := os.ReadFile(filepath.Join(directory, entry.Name()))
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			content = g.expandAllTags(content)
 
-			t = append(t, Include{
+			t = append(t, ExtraFile{
 				name:        entry.Name(),
 				fileContent: content,
 			})
 		}
 	}
 
-	g.includes = t
-
-	return nil
+	return t, nil
 }
 
 // Expands all tags in the given content bytes and returns the updated bytes
