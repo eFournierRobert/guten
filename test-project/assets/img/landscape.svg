@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200" role="img" aria-labelledby="title">
+  <title id="title">Geometric hills beneath a golden sun</title>
+  <path fill="#e3eddf" d="M0 0h800v200H0z"/>
+  <circle fill="#e2b65b" cx="625" cy="65" r="35"/>
+  <path fill="#8bb198" d="m0 160 180-110 200 130L550 90l250 95v15H0z"/>
+  <path fill="#396c54" d="m0 200 250-90 200 90 180-60 170 60z"/>
+</svg>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }} · Projects</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    {{ include:navbar.html }}
+    <main>
+        <article class="project">
+            <header>
+                <p class="eyebrow">Project template</p>
+                <h1>{{ title }}</h1>
+                <time datetime="{{ date }}">{{ date }}</time>
+                <p class="excerpt">{{ excerpt }}</p>
+            </header>
+            <div class="content">{{ content }}</div>
+        </article>
+        {{ include:related.html }}
+    </main>
+    {{ include:footer.html }}
+</body>
+</html>

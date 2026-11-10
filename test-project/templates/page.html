@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }} · Guten fixture</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    {{ include:navbar.html }}
+    <main>
+        <article>
+            <header>
+                <p class="eyebrow">Page template</p>
+                <h1>{{ title }}</h1>
+                <p class="excerpt">{{ excerpt }}</p>
+                <p>Updated <time datetime="{{ date }}">{{ date }}</time></p>
+            </header>
+            <div class="content">{{ content }}</div>
+        </article>
+    </main>
+    {{ include:footer.html }}
+</body>
+</html>
