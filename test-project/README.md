@@ -47,6 +47,9 @@ directory can nest the fixture instead of replacing it.
 | Untagged content | `/posts/about.html` | Generated and manually linked, absent from previews |
 | Nested posts | `/posts/notes/field-notes.html` | Nested output directory, working links and assets |
 | Tag previews in root HTML | Homepage blog section | Nested field notes, Markdown showcase, First entry, in that order |
+| Custom blog previews | Homepage blog section and blog sidebar on post-template pages | `previews/blog.html` renders each post's date, linked title, and excerpt |
+| Custom project previews | Homepage projects section | `previews/projects.html` renders a project card with date, linked title, excerpt, and an Explore project link |
+| Default preview fallback | Homepage features section and shared include | No `previews/features.html`; the built-in title and excerpt layout is used |
 | Overlapping tags | Homepage features section | Sample project, then Markdown showcase; both also appear under other tags |
 | Tags in templates | Blog sidebar on any post-template page | Blog previews expand directly in the template |
 | Tags in includes | Shared previews on homepage and posts | Features previews expand inside `includes/related.html` |
@@ -61,8 +64,25 @@ directory can nest the fixture instead of replacing it.
 | Output cleanup | Create `out/stale.txt`, then rebuild | The stale file disappears |
 
 All asset and navigation URLs are root-relative so they work on nested pages.
-Includes and templates are consumed during generation, not copied as directories
+Includes, templates, and previews are consumed during generation, not copied as directories
 into `out/`. The fixture README is not emitted either.
+
+## Custom post previews
+
+Put a preview in `previews/<tag>.html` to customize each post in that tag's list.
+The existing `{{ blog }}` and `{{ projects }}` notations select these files
+automatically. Guten keeps the enclosing `<div class="<tag>-previews">` and
+repeats the custom markup for each post, newest first.
+
+Preview variables are `{{ title }}`, `{{ date }}` (YYYY-MM-DD),
+`{{ excerpt }}`, and `{{ link }}` (the root-relative generated post URL).
+The blog example also checks a nested post URL; the project example uses the
+link twice. `{{ content }}` is not a preview variable.
+
+Includes are currently loaded before custom previews, so tag lists inside
+includes use the built-in preview layout. The shared `features` include keeps
+demonstrating that layout, while the blog sidebar directly in the post template
+uses the custom blog preview.
 
 ## Optional and error checks
 
@@ -71,6 +91,8 @@ to the next. The default fixture is intentionally a successful build.
 
 - **Optional includes:** rename `includes/` to `includes-disabled/`, then build.
   The build succeeds and include notations remain literal. Rename it back afterward.
+- **Optional previews:** rename `previews/` to `previews-disabled/`, then build.
+  Blog and project lists fall back to the built-in previews. Rename it back afterward.
 - **Reserved tags:** add `title`, `content`, `date`, or `excerpt` as a tag in a post.
   Building fails with a reserved-tag error. Remove the tag afterward.
 - **Missing template:** temporarily change a post's template to `missing`.
