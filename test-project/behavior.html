@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Literal notation checks</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    {{ include:navbar.html }}
+    <main>
+        <h1>Literal notation checks</h1>
+        <p>This is a second root HTML page. The strings below are deliberately left visible; they are expected output.</p>
+        <section>
+            <h2>Unknown tag</h2>
+            <p>No post defines this tag: <code>{{ unknown-tag }}</code></p>
+        </section>
+        <section>
+            <h2>Missing include</h2>
+            <p>No file matches this include: <code>{{ include:missing.html }}</code></p>
+        </section>
+        {{ include:literal-variables.html }}
+        <section>
+            <h2>Tags inside Markdown</h2>
+            <p>The <a href="/posts/markdown.html">Markdown showcase</a> contains a literal blog tag, even though the same tag expands in its template.</p>
+        </section>
+        <section>
+            <h2>Tag expansion on another root page</h2>
+            {{ projects }}
+        </section>
+    </main>
+    {{ include:footer.html }}
+</body>
+</html>

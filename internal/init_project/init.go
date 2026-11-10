@@ -1,5 +1,6 @@
 // Package init_project provides the function to initialize a
-// directory into a new guten project.
+// directory into a new guten project with empty content, template, asset,
+// include, and custom preview directories and a starter index.html.
 package init_project
 
 import (
@@ -16,8 +17,12 @@ const postsDir = "posts"
 const indexFile = "index.html"
 const assetsDir = "assets"
 const IncludesDir = "includes"
+const previewsDir = "previews"
 
-// Init function that inits a guten project in the given website directory.
+// Init creates templates/, posts/, assets/, includes/, and previews/ beneath
+// *directory, then writes a starter index.html. The directories are left empty.
+// An empty directory name or an existing path is rejected, except for ".",
+// which initializes the working directory and overwrites its index.html.
 func Init(directory *string) error {
 	if *directory == "" {
 		return errors.New("error during init: please provide a directory name")
@@ -41,6 +46,9 @@ func Init(directory *string) error {
 		return fmt.Errorf("error during init: %w", err)
 	}
 	if err := os.MkdirAll(filepath.Join(*directory, IncludesDir), 0740); err != nil {
+		return fmt.Errorf("error during init: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Join(*directory, previewsDir), 0740); err != nil {
 		return fmt.Errorf("error during init: %w", err)
 	}
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Guten development site</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <script src="/assets/js/main.js" defer></script>
+</head>
+<body>
+    {{ include:navbar.html }}
+    <main>
+        <header>
+            <p class="eyebrow">Guten development fixture</p>
+            <h1>A little of everything.</h1>
+            <p>Follow the links to inspect Markdown, templates, tags, includes, and static assets.</p>
+        </header>
+        <img class="banner" src="/assets/img/landscape.svg" alt="Geometric hills beneath a golden sun" width="800" height="200">
+        <p id="asset-status">JavaScript asset has not loaded.</p>
+        <section>
+            <h2>Blog · newest first</h2>
+            <p>Expected order: Nested field notes, Markdown showcase, First entry.</p>
+            <p>Custom dated previews from <code>previews/blog.html</code>.</p>
+            {{ blog }}
+        </section>
+        <section>
+            <h2>Projects</h2>
+            <p>Custom project cards from <code>previews/projects.html</code>.</p>
+            {{ projects }}
+        </section>
+        <section>
+            <h2>Shared feature tag</h2>
+            <p>This tag spans two templates and overlaps with the blog and projects tags. With no <code>previews/features.html</code>, it uses the default previews.</p>
+            {{ features }}
+        </section>
+        <section>
+            <h2>Untagged page</h2>
+            <p><a href="/posts/about.html">About this fixture</a> uses the page template and is linked manually.</p>
+        </section>
+        {{ include:related.html }}
+    </main>
+    {{ include:footer.html }}
+</body>
+</html>

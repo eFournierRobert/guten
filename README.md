@@ -44,6 +44,16 @@ See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) for a step-by-step guide.
 
 ## Documentation
 
+For development, copy the complete [test project](./test-project/README.md) into an ignored playground:
+
+```bash
+cp -R test-project dev-project
+cd dev-project
+go run .. -peek
+```
+
+Open http://localhost:5000. Edit `dev-project/` freely; stop and rerun `-peek` to rebuild after changes. Keep `test-project/` as the clean reference fixture.
+
 - **[Quick Start](./docs/QUICKSTART.md)** - Get your first site built in 5 minutes
 - **[Project Structure](./docs/STRUCTURE.md)** - Required directories and files, post frontmatter, output behavior
 - **[Templates Reference](./docs/TEMPLATES.md)** - Template variables, tag previews, reserved tag names

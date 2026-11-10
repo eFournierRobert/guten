@@ -1,11 +1,10 @@
-package gen
-
 // Package gen provides the website generator for guten.
 // It parses Markdown posts with YAML frontmatter, applies HTML templates,
 // and generates a static site in the out/ directory.
-// Requires posts/, templates/, assets/, and index.html in the project root.
-// The includes/ directory is optional and provides {{ include:filename }}
-// reusable HTML snippets.
+// It reads posts/, templates/, assets/, and root HTML files from the working
+// directory. Optional includes/ files provide {{ include:filename }} snippets;
+// optional previews/<tag>.html files customize each post in a tag preview list.
+package gen
 
 import (
 	"errors"
@@ -24,6 +23,7 @@ const assetsDir = "assets"
 const postsDir = "posts"
 const templateDir = "templates"
 const includesDir = "includes"
+const previewsDir = "previews"
 
 // Template variable tags available in template files.
 const titleTag = "{{ title }}"
@@ -31,25 +31,29 @@ const contentTag = "{{ content }}"
 const dateTag = "{{ date }}"
 const excerptTag = "{{ excerpt }}"
 
-// Include is a reusable HTML snippet loaded from the includes/ directory.
-// It is referenced in templates and root HTML files with the
-// {{ include:filename }} notation.
-type Include struct {
+// ExtraFile holds an include or custom preview loaded from its source directory.
+// name is the full base filename, including its extension; fileContent has tag
+// notations expanded at load time, before per-post preview variables are filled.
+type ExtraFile struct {
 	name        string
 	fileContent []byte
 }
 
 // Generator handles the static site generation process.
-// It collects posts, builds tag indexes, and generates output files.
+// It collects posts, builds tag indexes, loads includes and custom previews,
+// and generates output files. Posts within each tag are sorted newest first.
 type Generator struct {
 	posts    []post.Post
 	tags     []post.Tag
-	includes []Include
+	includes []ExtraFile
+	previews []ExtraFile
 }
 
 // GenerateWebsite builds a static site from posts and templates.
-// It clears out/, copies assets/, processes posts, and generates HTML.
-// Requires: index.html in root, assets/ directory, posts/, and templates/.
+// It clears out/, copies assets/, processes posts, and renders root HTML files.
+// Paths are relative to the working directory. The assets/ and posts/
+// directories and each post's templates/<name>.html must exist; includes/ and
+// previews/ are optional. Source includes, previews, and templates are not copied.
 func GenerateWebsite() error {
 	if err := os.RemoveAll(outDir); err != nil {
 		return err
@@ -69,9 +73,14 @@ func GenerateWebsite() error {
 		return err
 	}
 
+	// Custom previews must be available before root HTML and posts are rendered.
+	if err := generator.getAllPreviews(); err != nil {
+		return err
+	}
+
 	// Includes must be collected after posts so that tag notations inside
 	// include files ({{ tagname }}) can be expanded with the built tag index.
-	if err := generator.getAllIncludesTags(); err != nil {
+	if err := generator.getAllIncludes(); err != nil {
 		return err
 	}
 
@@ -106,6 +115,8 @@ func (g *Generator) copyAssets() error {
 
 // copyRootHtml copies all HTML files from the project root to out/ and
 // replaces {{ tagname }} with tag preview sections (lists of posts with that tag).
+// Matching custom previews are used when available. Includes are inserted after
+// tag expansion; unknown tag and include notations remain unchanged.
 // The index.html file must exist in the root for a homepage to be generated.
 func (g *Generator) copyRootHtml() error {
 	entries, err := os.ReadDir(".")
@@ -150,6 +161,9 @@ func (g *Generator) copyRootHtml() error {
 // generatePosts renders each post using its template and writes the result to out/posts/.
 // Template variables {{ title }}, {{ date }}, {{ excerpt }}, and {{ content }} are replaced.
 // The {{ content }} variable requires the post content to be converted from Markdown to HTML.
+// Tag previews expand after title, date, and excerpt substitution but before
+// Markdown content is inserted, so tag notations in Markdown remain literal.
+// Includes are inserted last, including references within rendered Markdown.
 func (g *Generator) generatePosts() error {
 	destDir := filepath.Join(outDir, postsDir)
 
@@ -213,7 +227,8 @@ func (g *Generator) generatePosts() error {
 
 // getAllPosts recursively scans the posts/ directory, parses each Markdown file,
 // and collects them into the Generator. It also builds a tag index by collecting
-// all posts that share the same tags. Posts are sorted by date (newest first).
+// all posts that share the same tags. Each tag's posts are sorted by date
+// (newest first); g.posts retains traversal order.
 func (g *Generator) getAllPosts(dir string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
@@ -280,10 +295,23 @@ func (g *Generator) getAllPosts(dir string) error {
 	return nil
 }
 
-// previewBuilder generates HTML for a tag preview section containing all posts with that tag.
-// The output is a div with class "{tag}-previews" containing individual preview divs.
-// Each preview has links to the post and displays title + excerpt.
+// previewBuilder renders a tag's posts in their indexed order (newest first)
+// inside a div with class "<tag>-previews". Unknown tags produce an empty string.
+// A loaded previews/<tag>.html supplies the markup repeated for each post;
+// otherwise each post uses the default preview.
+// Custom markup substitutes {{ title }}, {{ date }} (YYYY-MM-DD), {{ excerpt }},
+// and {{ link }} (the root-relative HTML post URL).
 func (g *Generator) previewBuilder(tag string) string {
+	var preview *ExtraFile
+	if g.previews != nil {
+		for _, p := range g.previews {
+			if p.name == tag+".html" {
+				preview = &p
+				break
+			}
+		}
+	}
+
 	builder := strings.Builder{}
 
 	for _, t := range g.tags {
@@ -291,12 +319,23 @@ func (g *Generator) previewBuilder(tag string) string {
 			builder.WriteString("<div class=\"" + t.Name + "-previews\">")
 
 			for _, p := range t.Posts {
-				builder.WriteString("<div class=\"preview\">\n")
-				builder.WriteString("<a href=\"/" + p.GetPostLink() + "\">")
-				builder.WriteString("<p>" + p.Metadata.Title + "</p>")
-				builder.WriteString("</a>\n")
-				builder.WriteString("<i>" + p.Metadata.Excerpt + "</i>\n")
-				builder.WriteString("</div>\n")
+				if preview == nil {
+					builder.WriteString("<div class=\"preview\">\n")
+					builder.WriteString("<a href=\"/" + p.GetPostLink() + "\">")
+					builder.WriteString("<p>" + p.Metadata.Title + "</p>")
+					builder.WriteString("</a>\n")
+					builder.WriteString("<i>" + p.Metadata.Excerpt + "</i>\n")
+					builder.WriteString("</div>\n")
+				} else {
+					fileContent := string(preview.fileContent)
+
+					fullContent := strings.ReplaceAll(fileContent, titleTag, p.Metadata.Title)
+					fullContent = strings.ReplaceAll(fullContent, dateTag, p.Metadata.Date.Format(time.DateOnly))
+					fullContent = strings.ReplaceAll(fullContent, excerptTag, p.Metadata.Excerpt)
+					fullContent = strings.ReplaceAll(fullContent, "{{ link }}", "/"+p.GetPostLink())
+					builder.WriteString(fullContent)
+					builder.WriteString("\n")
+				}
 			}
 
 			builder.WriteString("</div>\n")
@@ -306,47 +345,70 @@ func (g *Generator) previewBuilder(tag string) string {
 	return builder.String()
 }
 
-// getAllIncludesTags loads all files from the includes/ directory and
-// pre-expands {{ tagname }} notations in them, so that includes can display
-// tag previews when inserted into templates or root HTML files.
-// Projects without an includes/ directory are supported for backward
-// compatibility and are treated as having no includes.
-// Note: {{ include:filename }} inside an include file is not expanded -
-// nested includes are not supported.
-func (g *Generator) getAllIncludesTags() error {
-	entries, err := os.ReadDir(includesDir)
+// getAllIncludes loads optional includes/ snippets and expands their tag lists
+// using the loaded previews.
+func (g *Generator) getAllIncludes() error {
+	extra, err := g.getAllExtraFile(includesDir)
 	if err != nil {
-		// Backward compatibility for projects that doesn't have includes/
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
 		return err
 	}
 
-	var t []Include
+	g.includes = extra
+	return nil
+}
+
+// getAllPreviews loads optional previews/ files for lookup by <tag>.html.
+// Tag notations are expanded during loading; per-post variables are substituted
+// later by previewBuilder. The new previews are assigned only after all files
+// are loaded, so they do not reference one another during this loading pass.
+func (g *Generator) getAllPreviews() error {
+	extra, err := g.getAllExtraFile(previewsDir)
+	if err != nil {
+		return err
+	}
+
+	g.previews = extra
+	return nil
+}
+
+// getAllExtraFile reads files directly in directory, in filename order, and
+// pre-expands tag notations using the current tag index and loaded previews.
+// It skips subdirectories, accepts any file extension, and preserves base names
+// for exact matching. A missing directory returns nil, nil; other read errors
+// are returned to the caller. Post variables and includes are left unprocessed.
+func (g *Generator) getAllExtraFile(directory string) ([]ExtraFile, error) {
+	entries, err := os.ReadDir(directory)
+	if err != nil {
+		// Includes and custom previews are optional for existing projects.
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var t []ExtraFile
 	for _, entry := range entries {
 		if !entry.IsDir() {
-			content, err := os.ReadFile(filepath.Join(includesDir, entry.Name()))
+			content, err := os.ReadFile(filepath.Join(directory, entry.Name()))
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			content = g.expandAllTags(content)
 
-			t = append(t, Include{
+			t = append(t, ExtraFile{
 				name:        entry.Name(),
 				fileContent: content,
 			})
 		}
 	}
 
-	g.includes = t
-
-	return nil
+	return t, nil
 }
 
-// Expands all tags in the given content bytes and returns the updated bytes
-// content.
+// expandAllTags replaces exact {{ tagname }} notations for known tags with
+// previewBuilder output, leaving unknown notations unchanged. Tags are processed
+// once in index order; this is not a recursive template expansion.
 func (g *Generator) expandAllTags(content []byte) []byte {
 	for _, tag := range g.tags {
 		notation := fmt.Sprintf("{{ %s }}", tag.Name)

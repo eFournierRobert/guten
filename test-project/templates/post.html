@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }} · Guten fixture</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    {{ include:navbar.html }}
+    <main>
+        <article>
+            <header>
+                <p class="eyebrow">Post template</p>
+                <h1>{{ title }}</h1>
+                <time datetime="{{ date }}">{{ date }}</time>
+                <p class="excerpt">{{ excerpt }}</p>
+            </header>
+            <div class="content">{{ content }}</div>
+        </article>
+        <aside>
+            <h2>Blog previews directly in a template</h2>
+            {{ blog }}
+        </aside>
+        {{ include:related.html }}
+    </main>
+    {{ include:footer.html }}
+</body>
+</html>
