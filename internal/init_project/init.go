@@ -16,6 +16,7 @@ const postsDir = "posts"
 const indexFile = "index.html"
 const assetsDir = "assets"
 const IncludesDir = "includes"
+const previewsDir = "previews"
 
 // Init function that inits a guten project in the given website directory.
 func Init(directory *string) error {
@@ -41,6 +42,9 @@ func Init(directory *string) error {
 		return fmt.Errorf("error during init: %w", err)
 	}
 	if err := os.MkdirAll(filepath.Join(*directory, IncludesDir), 0740); err != nil {
+		return fmt.Errorf("error during init: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Join(*directory, previewsDir), 0740); err != nil {
 		return fmt.Errorf("error during init: %w", err)
 	}
 
