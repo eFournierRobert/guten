@@ -1,287 +1,46 @@
-# Templates Reference
+# Templates, lists, and includes
 
-This guide covers everything you need to know about creating and using templates with guten.
+Guten replaces exact notations such as `{{ title }}`. Keep the spaces shown; this is string substitution, not Go's template language. Unknown notations stay unchanged.
 
-## What is a Template?
+## Post templates
 
-A template is an HTML file that defines the layout and structure of your generated pages. Post templates contain special tags (like `{{ title }}` and `{{ content }}`) that get replaced with the post's metadata and content during the build. Root HTML files like `index.html` use the same curly brace notation for tag previews instead of post variables. Both contexts can reuse shared markup with `{{ include:filename }}` - see the [Includes](#includes) section.
+A post's `template: post` selects `templates/post.html`. Available variables:
 
-## Template Files Location
+| Notation | Value |
+| --- | --- |
+| `{{ title }}` | Post title |
+| `{{ date }}` | Date as `YYYY-MM-DD` |
+| `{{ excerpt }}` | Post summary |
+| `{{ content }}` | Markdown body rendered as HTML |
 
-All template files must be placed in the `templates/` directory:
+See the [minimal template](QUICKSTART.md) or the [styled example](EXAMPLES/templates/post.html). Metadata is inserted as-is, without HTML escaping; keep markup-sensitive characters escaped where needed.
 
-```
-templates/
-├── post.html        # For blog posts
-├── page.html        # For static pages
-└── project.html     # For project showcases
-```
+## Tag lists and custom previews
 
-## Template Tags
+Put `{{ blog }}` in a root HTML page, post template, or include to list all posts tagged `blog`, newest first. By default, entries show a linked title and excerpt inside `<div class="blog-previews">`.
 
-### Available Template Variables
-
-| Tag | Description | Example Output |
-|-----|-------------|----------------|
-| `{{ title }}` | Post title | "My Great Adventure" |
-| `{{ date }}` | Post publication date (YYYY-MM-DD) | "2024-01-15" |
-| `{{ excerpt }}` | Post excerpt/summary | "A brief description..." |
-| `{{ content }}` | Rendered HTML from Markdown body | `<p>Hello <strong>world</strong></p>` |
-
-### Using Multiple Variables
-
-You can combine multiple template tags in a single template:
+To customize each entry, create `previews/blog.html`:
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title }} | My Blog</title>
-</head>
-<body>
-    <article>
-        <header>
-            <h1>{{ title }}</h1>
-            <time datetime="{{ date }}">{{ date }}</time>
-        </header>
-        
-        <div class="excerpt">
-            {{ excerpt }}
-        </div>
-        
-        <div class="content">
-            {{ content }}
-        </div>
-    </article>
-</body>
-</html>
+<article>
+  <time datetime="{{ date }}">{{ date }}</time>
+  <h2><a href="{{ link }}">{{ title }}</a></h2>
+  <p>{{ excerpt }}</p>
+</article>
 ```
 
-### Tags in Root HTML Files
+The wrapper stays the same. Custom previews support `title`, `date`, `excerpt`, and **`link`**, a root-relative post URL such as `/posts/hello.html`. `link` is a preview variable, not a post template variable. Keep previews to per-entry markup; avoid embedding other tag lists in them.
 
-For `index.html` and other root-level HTML files, curly brace tags are replaced with **tag previews** (lists of posts with that tag):
+## Shared includes
+
+Create `includes/footer.html`, then insert it with:
 
 ```html
-<!-- index.html -->
-<html>
-<body>
-    <h1>My Blog</h1>
-    
-    {{ tech }}      <!-- Shows all posts tagged 'tech' -->
-    {{ cooking }}   <!-- Shows all posts tagged 'cooking' -->
-</body>
-</html>
+{{ include:footer.html }}
 ```
 
-Each tag preview generates:
-```html
-<div class="tech-previews">
-    <div class="preview">
-        <a href="posts/tech-article.html">
-            <p>Tech Article Title</p>
-        </a>
-        <i>A brief excerpt...</i>
-    </div>
-    <!-- More posts... -->
-</div>
-```
+Includes work in root HTML files and post templates, and include references in Markdown bodies are also expanded. Match the full filename, including its extension. Only files directly in `includes/` and `previews/` are loaded; both directories are optional.
 
-## Includes
+Tag lists in includes are expanded when loaded. Post variables in includes stay literal, so keep them in the post template. Nested includes aren't supported; use self-contained snippets.
 
-Includes are reusable HTML snippets that let you share markup (headers, footers, navigation, etc.) between templates and root HTML files instead of copy-pasting it.
-
-Files in the `includes/` directory are referenced with the `{{ include:filename }}` notation:
-
-```html
-<!-- index.html or templates/post.html -->
-<nav>
-    {{ include:navbar.html }}   <!-- Inserted from includes/navbar.html -->
-</nav>
-
-...
-
-{{ include:footer.html }}       <!-- Inserted from includes/footer.html -->
-```
-
-During the build, every `{{ include:filename }}` occurrence is replaced with the full contents of `includes/filename`. If your project has no `includes/` directory, builds work as before - existing projects are unaffected.
-
-The example site in [`EXAMPLES/`](./EXAMPLES/) uses includes on every page - see `includes/navbar.html`, `includes/footer.html` and `includes/tag-cloud.html` for live reference files.
-
-### What gets expanded inside an include
-
-- **Tag notations always work**: `{{ tagname }}` inside an include file is expanded into tag previews when the include is loaded, before the include is inserted anywhere. Tag notations also work directly in post templates. So both of the following produce tag previews:
-  ```html
-  <!-- In templates/post.html -->
-  <aside class="blog-sidebar">{{ blog }}</aside>
-  
-  <!-- Inside includes/sidebar.html -->
-  <div>{{ blog }}</div>
-  ```
-- **Post variables never do**: `{{ title }}`, `{{ date }}`, `{{ excerpt }}` and `{{ content }}` are never expanded inside includes. Includes are inserted after all post variables are resolved, so any post variable you put in an include file lands in the output as a literal string. Keep includes free of post variables.
-- **Nested includes do not**: an `{{ include:... }}` notation inside an include file is *not* expanded. Compose includes from plain HTML only, not from other includes.
-- **Tag notations in post content do not**: tag notations inside your Markdown are never expanded - they only work in root HTML files and templates. Include notations in post content, however, are expanded by the include pass at the end of post rendering.
-
-### Example
-
-`includes/footer.html`:
-
-```html
-<footer>
-    <p>&copy; 2024 My Blog. Built with guten.</p>
-</footer>
-```
-
-`index.html`:
-
-```html
-<body>
-    <h1>My Blog</h1>
-    {{ blog }}
-    {{ include:footer.html }}
-</body>
-```
-
-The generated `out/index.html` contains the footer markup in place of the include notation.
-
-## Template Reference Examples
-
-### Blog Post Template
-
-`templates/post.html`:
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-    <article class="post">
-        <header class="post-header">
-            <h1 class="post-title">{{ title }}</h1>
-            <time class="post-date">{{ date }}</time>
-        </header>
-        
-        <div class="post-content">
-            {{ content }}
-        </div>
-        
-        <footer class="post-footer">
-            <p class="post-excerpt">{{ excerpt }}</p>
-        </footer>
-    </article>
-    
-    <script src="/assets/js/main.js"></script>
-</body>
-</html>
-```
-
-### Static Page Template
-
-`templates/page.html`:
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ title }} - My Site</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-</head>
-<body>
-    <nav>
-        <a href="/">Home</a>
-        <a href="/about.html">About</a>
-    </nav>
-    
-    <main class="page">
-        <h1>{{ title }}</h1>
-        <div class="page-content">
-            {{ content }}
-        </div>
-    </main>
-    
-    <footer>
-        <p>{{ excerpt }}</p>
-    </footer>
-</body>
-</html>
-```
-
-### Project Showcase Template
-
-`templates/project.html`:
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ title }}</title>
-    <style>
-        .project { max-width: 800px; margin: 0 auto; }
-        .project img { max-width: 100%; }
-    </style>
-</head>
-<body>
-    <article class="project">
-        <h1>{{ title }}</h1>
-        <time>{{ date }}</time>
-        
-        <div class="project-gallery">
-            {{ content }}
-        </div>
-        
-        <div class="project-description">
-            <p>{{ excerpt }}</p>
-        </div>
-    </article>
-</body>
-</html>
-```
-
-## Connecting Posts to Templates
-
-In your post's YAML frontmatter, specify which template to use:
-
-```markdown
----
-date: 2024-02-20
-title: My Awesome Blog Post
-excerpt: This is a summary of my post
-template: post      # Uses templates/post.html
-tags:
-  - blog
----
-
-# Blog Content Here
-```
-
-The `template` field must match a template file name (without `.html`):
-- `template: post` → `templates/post.html`
-- `template: page` → `templates/page.html`
-- `template: project` → `templates/project.html`
-
-## Reserved Tag Names
-
-⚠️ **Do not use these names as template variables or in root HTML files:**
-
-- `title`
-- `content`
-- `date`
-- `excerpt`
-
-These names are reserved for post metadata. Using them as custom tags will cause errors.
-
-## Tips & Best Practices
-
-1. **Use consistent layouts**: Create templates that work well together for a cohesive site design.
-
-2. **Keep CSS/JS in assets**: Reference static assets as `/assets/filename` in your templates.
-
-3. **Test locally**: Use `guten -peek` to preview your templates before deploying.
-
-4. **Shared header/footer markup**: Use includes (`{{ include:filename }}`) to share navigation, headers and footers between templates - see the [Includes](#includes) section.
+Tag lists in Markdown bodies are not expanded. Use them in the surrounding HTML template instead.

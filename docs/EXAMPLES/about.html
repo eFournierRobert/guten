@@ -1,27 +1,31 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - My Blog</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A small journal for unhurried ideas. About Fieldnotes, a Guten example site.">
+  <title>About — Fieldnotes</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
-    <div class="page">
-        {{ include:navbar.html }}
-
-        <section>
-            <h1>About this site</h1>
-            <p>This page is a plain HTML file sitting in the project root, next to
-            <code>index.html</code>. It does not use a post template - guten copies every
-            root <code>.html</code> file to <code>out/</code> and expands includes and tag
-            notations on the way through.</p>
-            <p>Like every other page on this site, the navigation bar and the footer are not
-            written in this file: they come from shared snippets in the
-            <code>includes/</code> directory.</p>
-        </section>
-
-        {{ include:footer.html }}
-    </div>
+  {{ include:navbar.html }}
+  <main id="main" class="article-page wrap">
+    <a class="back-link" href="/">← Back home</a>
+    <article class="article">
+      <header class="article-header">
+        <p class="eyebrow">Behind the notebook</p>
+        <h1>A place to<br><em>pay attention.</em></h1>
+        <p class="standfirst">Not everything needs to be a big idea. Some things just need a place to land.</p>
+      </header>
+      <div class="prose">
+        <p>Fieldnotes is a journal about the things that make an ordinary day feel a little fuller: a different route home, an afternoon making something useful, a quiet hour with a notebook.</p>
+        <p>The rule is simple: notice something, spend a little time with it, write it down. There is no publishing schedule and no race to keep up.</p>
+        <h2>A small site, by design</h2>
+        <p>This is a fictional journal made to show what you can build with <a href="https://github.com/eFournierRobert/guten">Guten</a>. The articles start as Markdown, the pages share a little HTML, and everything you see is a static file. Feel free to use it as a starting point for your own corner of the web.</p>
+        <p><a href="/#journal">Find something to read →</a></p>
+      </div>
+    </article>
+  </main>
+  {{ include:footer.html }}
 </body>
 </html>

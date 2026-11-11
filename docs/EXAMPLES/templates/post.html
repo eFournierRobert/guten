@@ -1,37 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ excerpt }}">
+  <title>{{ title }} — Fieldnotes</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
-    <div class="page">
-        {{ include:navbar.html }}
-
-        <article class="post">
-            <header>
-                <h1 class="post-title">{{ title }}</h1>
-                <time class="post-date">{{ date }}</time>
-            </header>
-
-            <hr>
-
-            <div class="post-content">
-                {{ content }}
-            </div>
-
-            <aside class="post-sidebar">
-                <h3>Blog Posts</h3>
-                <!-- Tag notations also expand directly in post templates -->
-                {{ blog }}
-            </aside>
-        </article>
-
-        {{ include:tag-cloud.html }}
-
-        {{ include:footer.html }}
-    </div>
+  {{ include:navbar.html }}
+  <main id="main" class="article-page wrap">
+    <a class="back-link" href="/#journal">← Back to the journal</a>
+    <article class="article">
+      <header class="article-header">
+        <p class="eyebrow">Fieldnotes / <time datetime="{{ date }}">{{ date }}</time></p>
+        <h1>{{ title }}</h1>
+        <p class="standfirst">{{ excerpt }}</p>
+      </header>
+      <div class="prose">{{ content }}</div>
+    </article>
+    <div class="article-end"><span aria-hidden="true">✳</span><a class="text-link" href="/#journal">More from the journal →</a></div>
+  </main>
+  {{ include:footer.html }}
 </body>
 </html>

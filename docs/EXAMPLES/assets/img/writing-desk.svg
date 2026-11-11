@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#dfe4cd"/>
+  <path d="M0 135H960M0 405H960" stroke="#cdd5b9" stroke-width="2"/>
+  <!-- Open notebook, seen from above. -->
+  <g transform="rotate(-6 450 270)">
+    <rect x="209" y="113" width="472" height="328" rx="6" fill="#bdc8a9"/>
+    <rect x="200" y="102" width="480" height="328" rx="6" fill="#253c32"/>
+    <path d="M214 113H417Q440 113 440 128Q440 113 463 113H666V415H463Q440 415 440 427Q440 415 417 415H214Z" fill="#f7f5ed"/>
+    <path d="M440 129V409" stroke="#d5d8ca" stroke-width="2"/>
+    <g stroke="#d5d8ca" stroke-width="2">
+      <path d="M247 191H404M247 219H404M247 247H404M247 275H404M247 303H404M247 331H404M247 359H355"/>
+      <path d="M475 191H632M475 219H632M475 247H632M475 275H632M475 303H632M475 331H632M475 359H590"/>
+    </g>
+    <path d="M247 158H341" stroke="#b74c2f" stroke-width="5"/>
+    <path d="M609 113V168L598 158L587 168V113" fill="#b74c2f"/>
+  </g>
+  <!-- Tea and a pencil keep the illustration deliberately simple. -->
+  <ellipse cx="785" cy="174" rx="77" ry="73" fill="#cdd5b9"/>
+  <circle cx="780" cy="163" r="67" fill="#f7f5ed"/>
+  <path d="M838 145H854Q875 163 854 182H838" fill="none" stroke="#f7f5ed" stroke-width="14"/>
+  <circle cx="780" cy="163" r="49" fill="#ad7751"/>
+  <path d="M750 143Q763 127 783 132" fill="none" stroke="#d9af83" stroke-width="4" stroke-linecap="round"/>
+  <g transform="rotate(17 741 361)">
+    <path d="M735 261H747V428H735Z" fill="#b74c2f"/>
+    <path d="M735 428L741 453L747 428" fill="#d5b78f"/>
+    <path d="M739 445L741 453L743 445" fill="#253c32"/>
+    <path d="M735 261H747V277H735Z" fill="#253c32"/>
+  </g>
+</svg>

@@ -1,61 +1,46 @@
-# guten
+# Guten
 
-A small static site generator written in Go. Write posts in Markdown, define layouts with HTML templates, and generate a static site.
+A small static site generator written in Go. Write Markdown posts, style them with HTML and CSS, and build a site you can host anywhere.
 
 ## Install
 
-```bash
+With Go 1.27 or newer:
+
+```sh
 git clone https://github.com/eFournierRobert/guten.git
 cd guten
 go install .
 ```
 
-This will compile the binary and put it in `~/go/bin/`.
+Add Go's binary directory (`go env GOBIN`, or `$(go env GOPATH)/bin` when unset) to your `PATH`.
 
-## Quick Start
+## Try it
 
-```bash
-# Create a new project (scaffolds the base structure)
-guten -init my-site
+From the repository, copy the [example blog](docs/EXAMPLES/README.md):
+
+```sh
+cp -R docs/EXAMPLES my-site
 cd my-site
-
-# Create a starter post, then edit the template name, title and content
-guten -new-post posts/hello-world.md
-vim posts/hello-world.md templates/post.html    # see docs/QUICKSTART.md
-
-
-# Build or serve
-guten -build   # Build to out/
-guten -peek    # Build and serve on http://localhost:5000
+guten -peek
 ```
 
-`guten -init` creates a basic `index.html` plus the `assets/`, `posts/`, `templates/` and `includes/` directories. The `assets/`, `posts/`, `templates/` and `includes/` directories start empty and the generated `index.html` is a placeholder - you still need to add your own content before building. `includes/` is optional (reusable HTML snippets for `{{ include:filename }}`) and older projects without it build fine. You can also initialize the current directory with `guten -init .`.
+Open **http://localhost:5000**. Stop with Ctrl+C; rerun `guten -peek` after edits to rebuild. There is no live reload.
 
-See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) for a step-by-step guide.
+## Make it yours
 
-## Commands
+- Edit `index.html` and other root HTML pages.
+- Write posts in `posts/` with YAML frontmatter; `template: post` selects `templates/post.html`.
+- Put CSS, images, and other static files in `assets/`.
+- Use `{{ blog }}` to list posts tagged `blog`, newest first. Customize each entry in `previews/blog.html`.
+- Share HTML with `{{ include:footer.html }}` from `includes/footer.html`.
 
-| Flag | What it does |
-|------|-------------|
-| `-init <dir>` | Scaffolds a new project in `dir`: creates `index.html`, `assets/`, `posts/`, `templates/` and `includes/`. The directory must not already exist, except `guten -init .` which initializes the current directory |
-| `-new-post <path>` | Writes a new starter post: frontmatter with today's date and the `post` template, plus a placeholder quote as content. If the file already exists, it asks before overwriting; you must then replace the placeholder title, excerpt and content |
-| `-build` | Generates the static site in `out/`: root `.html` files get tag previews and includes expanded, posts are rendered through their templates. The output directory is completely cleared and rebuilt on each run |
-| `-peek` | Builds the site (same as `-build`), then serves `out/` over HTTP at `http://localhost:5000` (Ctrl+C to stop) |
+| Command | Action |
+| --- | --- |
+| `guten -init my-site` | Create an empty scaffold with a placeholder homepage. Add content and templates yourself. |
+| `guten -new-post posts/hello.md` | Create a starter post using today's date and the `post` template. Edit its metadata and body. |
+| `guten -build` | Rebuild `out/` from the current project. **Deletes the previous `out/` first.** |
+| `guten -peek` | Build once and serve `out/` on port 5000. |
 
-## Documentation
+Publish the contents of `out/` to a static host. Serve from the domain root; generated post links start with `/posts/`.
 
-For development, copy the complete [test project](./test-project/README.md) into an ignored playground:
-
-```bash
-cp -R test-project dev-project
-cd dev-project
-go run .. -peek
-```
-
-Open http://localhost:5000. Edit `dev-project/` freely; stop and rerun `-peek` to rebuild after changes. Keep `test-project/` as the clean reference fixture.
-
-- **[Quick Start](./docs/QUICKSTART.md)** - Get your first site built in 5 minutes
-- **[Project Structure](./docs/STRUCTURE.md)** - Required directories and files, post frontmatter, output behavior
-- **[Templates Reference](./docs/TEMPLATES.md)** - Template variables, tag previews, reserved tag names
-- **[Troubleshooting](./docs/TROUBLESHOOTING.md)** - Common errors and how to fix them
-- **[Example Site](./docs/EXAMPLES/)** - Working example site with includes, tag previews and multiple templates
+[Start from scratch](docs/QUICKSTART.md) · [Files and posts](docs/STRUCTURE.md) · [Templates](docs/TEMPLATES.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
